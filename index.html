@@ -9,7 +9,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
-    
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -23,22 +22,33 @@
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Poppins', sans-serif; background-color: #F3F4F6; }
         
-        /* Smooth Sidebar */
         .sidebar { background-color: #1F2937; color: white; transition: all 0.3s; }
         .nav-item { transition: all 0.2s; border-radius: 12px; margin-bottom: 5px; cursor: pointer; }
-        .nav-item:hover, .nav-item.active { background-color: #374151; color: #F472B6; padding-left: 1rem; }
+        .nav-item:hover, .nav-item.active { background-color: #374151; color: #3B82F6; padding-left: 1rem; }
         
         .stat-card { border-radius: 20px; transition: transform 0.2s; border: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .stat-card:hover { transform: translateY(-3px); }
+
+        /* Scanner Specific Styles */
+        .scanner-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .scanner-viewfinder {
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            background: #000;
+        }
         
-        /* Mobile Fixes */
         @media (max-width: 768px) {
             .sidebar { position: fixed; bottom: 0; width: 100%; height: 70px; flex-direction: row; z-index: 50; padding: 0 10px; justify-content: space-around; border-radius: 20px 20px 0 0; }
             .sidebar h1, .nav-text, .logout-txt { display: none; }
             .main-content { margin-bottom: 80px; }
         }
         
-        .loader { border-top-color: #F472B6; animation: spinner 1s linear infinite; }
+        .loader { border-top-color: #3B82F6; animation: spinner 1s linear infinite; }
         @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
@@ -51,18 +61,18 @@
     <div id="login-view" class="flex-grow flex items-center justify-center bg-gray-900 px-4">
         <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md">
             <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-pink-500 rounded-2xl mx-auto flex items-center justify-center mb-3">
+                <div class="w-16 h-16 bg-blue-500 rounded-2xl mx-auto flex items-center justify-center mb-3">
                     <i class="fas fa-utensils text-white text-2xl"></i>
                 </div>
                 <h2 class="text-3xl font-bold text-gray-800">FoodFlow</h2>
             </div>
             <form id="login-form" class="space-y-4">
-                <input type="email" id="login-email" class="w-full px-4 py-3 rounded-xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-pink-500" placeholder="Email" required>
-                <input type="password" id="login-pass" class="w-full px-4 py-3 rounded-xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-pink-500" placeholder="Password" required>
+                <input type="email" id="login-email" class="w-full px-4 py-3 rounded-xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-blue-500" placeholder="Email" required>
+                <input type="password" id="login-pass" class="w-full px-4 py-3 rounded-xl bg-gray-100 border-none outline-none focus:ring-2 focus:ring-blue-500" placeholder="Password" required>
                 <button type="submit" class="w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition shadow-lg">Sign In</button>
             </form>
             <div class="mt-6 text-center border-t pt-4">
-                <button onclick="showSetupModal()" class="text-pink-600 text-sm font-semibold hover:underline">Initialize Super Admin</button>
+                <button onclick="showSetupModal()" class="text-blue-600 text-sm font-semibold hover:underline">Initialize Super Admin</button>
             </div>
         </div>
     </div>
@@ -76,7 +86,7 @@
                 <input type="password" id="sa-pass" placeholder="New Password" class="w-full px-4 py-3 rounded-xl bg-gray-100 outline-none">
             </div>
             <div class="flex gap-2 mt-4">
-                <button onclick="verifySetupCode()" id="verify-btn" class="flex-1 bg-pink-500 text-white py-2 rounded-xl font-bold">Verify</button>
+                <button onclick="verifySetupCode()" id="verify-btn" class="flex-1 bg-blue-500 text-white py-2 rounded-xl font-bold">Verify</button>
                 <button onclick="createSuperAdmin()" id="create-sa-btn" class="hidden flex-1 bg-green-500 text-white py-2 rounded-xl font-bold">Create</button>
                 <button onclick="document.getElementById('setup-modal').classList.add('hidden')" class="flex-1 bg-gray-200 text-gray-700 py-2 rounded-xl font-bold">Cancel</button>
             </div>
@@ -86,11 +96,12 @@
     <div id="admin-view" class="hidden flex h-screen bg-[#F3F4F6]">
         <div class="sidebar w-64 flex flex-col py-6 px-4 md:h-full h-auto flex-shrink-0">
             <div class="flex items-center gap-3 px-2 mb-8 md:flex hidden">
-                <div class="w-8 h-8 bg-pink-500 rounded-lg flex items-center justify-center"><i class="fas fa-utensils text-white text-xs"></i></div>
+                <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center"><i class="fas fa-utensils text-white text-xs"></i></div>
                 <h1 class="text-xl font-bold tracking-wide">FoodFlow</h1>
             </div>
             <nav class="flex-1 flex md:flex-col flex-row md:gap-2 gap-1 overflow-x-auto md:overflow-visible no-scrollbar">
                 <div onclick="switchTab('dashboard')" class="nav-item active flex items-center p-3"><i class="fas fa-home w-6 text-center"></i> <span class="nav-text font-medium text-sm ml-3">Dashboard</span></div>
+                <div onclick="switchTab('logs')" class="nav-item flex items-center p-3"><i class="fas fa-list-alt w-6 text-center"></i> <span class="nav-text font-medium text-sm ml-3">Logs</span></div>
                 <div onclick="switchTab('sessions')" class="nav-item flex items-center p-3"><i class="fas fa-clock w-6 text-center"></i> <span class="nav-text font-medium text-sm ml-3">Sessions</span></div>
                 <div onclick="switchTab('registration')" class="nav-item flex items-center p-3"><i class="fas fa-users w-6 text-center"></i> <span class="nav-text font-medium text-sm ml-3">Registration</span></div>
                 <div onclick="switchTab('ids')" class="nav-item flex items-center p-3"><i class="fas fa-id-card w-6 text-center"></i> <span class="nav-text font-medium text-sm ml-3">ID Cards</span></div>
@@ -134,6 +145,31 @@
                 </div>
                 <h3 class="text-xl font-bold text-gray-800 mb-4">Session Breakdown</h3>
                 <div id="session-stats-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </div>
+
+            <div id="tab-logs" class="tab-content hidden">
+                <div class="bg-white p-6 rounded-3xl shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-lg">System Logs</h3>
+                        <button onclick="loadSystemLogs()" class="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-lg"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-gray-50 text-gray-500 sticky top-0">
+                                <tr>
+                                    <th class="px-4 py-3">Time</th>
+                                    <th class="px-4 py-3">Member Name</th>
+                                    <th class="px-4 py-3">Member ID</th>
+                                    <th class="px-4 py-3">Session</th>
+                                    <th class="px-4 py-3">Scanner ID</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logs-table-body">
+                                <tr><td colspan="5" class="text-center py-4 text-gray-400">Loading logs...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             <div id="tab-sessions" class="tab-content hidden">
@@ -263,32 +299,50 @@
         </main>
     </div>
 
-    <div id="scanner-view" class="hidden h-screen bg-gray-900 flex flex-col items-center">
-        <div class="w-full bg-gray-800 p-4 rounded-b-3xl shadow-lg z-10">
-            <div class="flex justify-between items-center mb-4">
-                 <h2 class="text-white font-bold">Scanner</h2>
-                 <button onclick="logout()" class="text-gray-400"><i class="fas fa-sign-out-alt"></i></button>
+    <div id="scanner-view" class="hidden h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
+        <div class="scanner-card w-full max-w-md p-6 flex flex-col gap-4">
+            <div class="text-center mb-2 relative">
+                <h2 class="text-blue-600 font-bold text-xl tracking-widest">FOODFLOW SCANNER</h2>
+                <button onclick="logout()" class="absolute right-0 top-0 text-gray-400 hover:text-red-500"><i class="fas fa-sign-out-alt"></i></button>
             </div>
-            <select id="scanner-session-select" class="w-full bg-gray-700 text-white p-3 rounded-xl outline-none"><option value="">Select Session...</option></select>
-        </div>
-        <div class="flex-1 w-full flex flex-col items-center justify-center p-4">
-            <div id="qr-reader" class="w-full max-w-sm bg-black rounded-3xl overflow-hidden shadow-2xl border-4 border-gray-700 relative"></div>
-            <button onclick="document.getElementById('manual-input-modal').classList.remove('hidden')" class="mt-6 bg-gray-700 text-white px-6 py-2 rounded-full text-sm font-medium">Manual Input</button>
-        </div>
-        
-        <div id="scan-result-modal" class="fixed inset-0 bg-black bg-opacity-90 hidden z-50 flex items-center justify-center p-4">
-            <div class="bg-white w-full max-w-sm rounded-3xl p-6 text-center">
-                <div id="result-content"></div>
-                <button onclick="document.getElementById('scan-result-modal').classList.add('hidden')" class="mt-4 w-full bg-gray-200 py-3 rounded-xl font-bold">Close</button>
+
+            <div class="scanner-viewfinder aspect-square w-full relative">
+                <div id="qr-reader" class="w-full h-full object-cover"></div>
+                <div class="absolute inset-0 border-2 border-white/30 rounded-xl m-8 pointer-events-none"></div>
+                <div class="absolute top-0 left-0 right-0 p-2 bg-black/50 text-white text-xs text-center z-10" id="camera-status">Initializing...</div>
+            </div>
+
+            <div class="space-y-3 mt-2">
+                <div class="relative">
+                    <i class="fas fa-camera absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <select id="scanner-camera-select" class="w-full bg-gray-50 border border-gray-200 text-gray-700 p-3 pl-10 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 appearance-none text-sm font-medium">
+                        <option value="">Auto Select Camera</option>
+                    </select>
+                    <i class="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
+
+                <div class="relative">
+                    <i class="fas fa-clock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <select id="scanner-session-select" class="w-full bg-gray-50 border border-gray-200 text-gray-700 p-3 pl-10 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 appearance-none text-sm font-medium">
+                        <option value="">Select Session...</option>
+                    </select>
+                    <i class="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
+
+                <input type="text" id="manual-id-input-main" placeholder="Enter ID Manually (e.g. CS/01)" 
+                    class="w-full bg-gray-50 border border-gray-200 p-3 text-center rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono uppercase">
+                
+                <button onclick="triggerManualScan()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-blue-700 transition active:scale-95">
+                    SCAN / CHECK
+                </button>
             </div>
         </div>
-        <div id="manual-input-modal" class="fixed inset-0 bg-black bg-opacity-90 hidden z-50 flex items-center justify-center p-4">
-            <div class="bg-white w-full max-w-sm rounded-3xl p-6">
-                <h3 class="text-lg font-bold mb-4">Enter Member ID</h3>
-                <input type="text" id="manual-id-input" placeholder="e.g., CS/01" class="w-full p-4 bg-gray-100 rounded-xl text-xl text-center font-mono uppercase mb-4">
-                <button onclick="processScan(document.getElementById('manual-id-input').value.toUpperCase())" class="w-full bg-pink-500 text-white py-3 rounded-xl font-bold mb-2">Check</button>
-                <button onclick="document.getElementById('manual-input-modal').classList.add('hidden')" class="w-full bg-gray-200 py-3 rounded-xl font-bold">Cancel</button>
-            </div>
+    </div>
+
+    <div id="scan-result-modal" class="fixed inset-0 bg-black bg-opacity-90 hidden z-[60] flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 text-center">
+            <div id="result-content"></div>
+            <button onclick="document.getElementById('scan-result-modal').classList.add('hidden')" class="mt-4 w-full bg-gray-200 py-3 rounded-xl font-bold">Close</button>
         </div>
     </div>
 
@@ -312,6 +366,7 @@
         const auth = getAuth(app);
         let currentUser = null;
         let scanLock = false;
+        let html5QrCode = null;
 
         // --- NAVIGATION ---
         window.switchTab = (tab) => {
@@ -323,7 +378,8 @@
             // Dynamic Data Load
             if(tab === 'registration') loadCommitteesAndMembers();
             if(tab === 'ids') loadCommitteesForIDs();
-            if(tab === 'staff') loadStaffList(); // Added this
+            if(tab === 'staff') loadStaffList();
+            if(tab === 'logs') loadSystemLogs(); // Load logs when clicked
             if(tab === 'dashboard') initAdminDashboard();
         };
 
@@ -366,92 +422,181 @@
             }
         });
 
-        // --- STAFF MANAGEMENT (FIXED) ---
-        window.createStaffUser = async () => {
-            const email = document.getElementById('staff-email').value;
-            const pass = document.getElementById('staff-pass').value;
-            const role = document.getElementById('staff-role').value;
+        // --- ADMIN LOGS (NEW FEATURE) ---
+        window.loadSystemLogs = () => {
+            const tbody = document.getElementById('logs-table-body');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-blue-500"><i class="fas fa-spinner fa-spin"></i> Fetching Data...</td></tr>';
             
-            if(!email || !pass) return Swal.fire('Missing Data', 'Please fill email and password', 'warning');
+            // Fetch everything needed to build context
+            Promise.all([
+                get(ref(db, 'logs')),
+                get(ref(db, 'members')),
+                get(ref(db, 'sessions')),
+                get(ref(db, 'users'))
+            ]).then(([logsSnap, memSnap, sessSnap, userSnap]) => {
+                const logs = logsSnap.val() || {};
+                const members = memSnap.val() || {};
+                const sessions = sessSnap.val() || {};
+                const users = userSnap.val() || {};
+                
+                let flatLogs = [];
 
-            try {
-                // Warning: Creating user logs out current user in standard Firebase Auth.
-                const uc = await createUserWithEmailAndPassword(auth, email, pass);
-                await set(ref(db, 'users/' + uc.user.uid), { email, role });
-                Swal.fire('Success', 'Staff Created! You will be logged out to verify.', 'success').then(() => location.reload());
-            } catch(e) { Swal.fire('Error', e.message, 'error'); }
-        };
+                // Flatten logs structure: SessionID -> MemberID -> LogData
+                Object.keys(logs).forEach(sessionId => {
+                    const sessionLogs = logs[sessionId];
+                    const sessionName = sessions[sessionId] ? sessions[sessionId].name : 'Unknown Session';
+                    
+                    Object.keys(sessionLogs).forEach(memberKey => {
+                        const logEntry = sessionLogs[memberKey];
+                        const member = members[memberKey] || { name: 'Unknown Member', id: memberKey.replace('_','/') };
+                        
+                        flatLogs.push({
+                            timestamp: logEntry.timestamp,
+                            memName: member.name,
+                            memId: member.id,
+                            session: sessionName,
+                            scanner: users[logEntry.scanner] ? users[logEntry.scanner].email : 'Unknown'
+                        });
+                    });
+                });
 
-        window.loadStaffList = () => {
-            const tbody = document.getElementById('staff-list-body');
-            tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4">Loading...</td></tr>';
-            
-            onValue(ref(db, 'users'), (snapshot) => {
-                const users = snapshot.val() || {};
-                tbody.innerHTML = '';
-                if(Object.keys(users).length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4">No staff found.</td></tr>';
+                // Sort by newst first
+                flatLogs.sort((a, b) => b.timestamp - a.timestamp);
+
+                if (flatLogs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-400">No logs found.</td></tr>';
                     return;
                 }
-                
-                Object.entries(users).forEach(([uid, user]) => {
-                    tbody.innerHTML += `
-                        <tr class="bg-white border-b hover:bg-gray-50">
-                            <td class="px-4 py-3">${user.email}</td>
-                            <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs font-bold ${user.role==='admin'?'bg-purple-100 text-purple-600':'bg-blue-100 text-blue-600'}">${user.role.toUpperCase()}</span></td>
-                            <td class="px-4 py-3">
-                                ${user.role !== 'admin' ? `<button onclick="removeStaff('${uid}')" class="text-red-500 hover:text-red-700 font-medium">Remove</button>` : ''}
-                            </td>
-                        </tr>
-                    `;
-                });
+
+                tbody.innerHTML = flatLogs.map(log => `
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-4 py-3 text-gray-500 text-xs">${new Date(log.timestamp).toLocaleString()}</td>
+                        <td class="px-4 py-3 font-medium">${log.memName}</td>
+                        <td class="px-4 py-3 font-mono text-xs">${log.memId}</td>
+                        <td class="px-4 py-3"><span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">${log.session}</span></td>
+                        <td class="px-4 py-3 text-xs text-gray-500">${log.scanner}</td>
+                    </tr>
+                `).join('');
             });
         };
-        
-        window.removeStaff = (uid) => {
-            Swal.fire({
-                title: 'Remove Staff?',
-                text: "This removes database access but not the Auth account (requires Firebase Admin SDK).",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, remove'
-            }).then((result) => {
-                if(result.isConfirmed) {
-                    remove(ref(db, `users/${uid}`));
+
+        // --- SCANNER LOGIC (UPDATED WITH CAMERA SELECT) ---
+        function initScanner() {
+            // Load Sessions
+            onValue(ref(db, 'sessions'), snap => {
+                const sess = snap.val() || {};
+                const sel = document.getElementById('scanner-session-select');
+                sel.innerHTML = '<option value="">Select Session...</option>';
+                for(const [id, d] of Object.entries(sess)) if(d.active) sel.innerHTML += `<option value="${id}">${d.name}</option>`;
+            });
+
+            // Initialize Camera
+            html5QrCode = new Html5Qrcode("qr-reader");
+            
+            // Get Cameras and Populate Select
+            Html5Qrcode.getCameras().then(devices => {
+                const camSelect = document.getElementById('scanner-camera-select');
+                camSelect.innerHTML = ''; // Clear default
+                
+                if (devices && devices.length) {
+                    devices.forEach((device, index) => {
+                        const option = document.createElement('option');
+                        option.value = device.id;
+                        option.text = device.label || `Camera ${index + 1}`;
+                        camSelect.appendChild(option);
+                    });
+                    
+                    // Start with first camera
+                    startCamera(devices[0].id);
+                    
+                    // Listener for camera change
+                    camSelect.addEventListener('change', (e) => {
+                        html5QrCode.stop().then(() => {
+                            startCamera(e.target.value);
+                        }).catch(err => console.error(err));
+                    });
+                } else {
+                    document.getElementById('camera-status').innerText = "No Cameras Found";
                 }
+            }).catch(err => {
+                document.getElementById('camera-status').innerText = "Camera Error";
             });
-        };
+        }
 
-        // --- SYSTEM RESET (SECURE) ---
-        window.systemReset = async () => {
-            const { value: password } = await Swal.fire({
-                title: 'Enter Admin Password',
-                input: 'password',
-                inputLabel: 'Password required to reset system',
-                inputPlaceholder: 'Enter your password',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                confirmButtonText: 'RESET EVERYTHING'
+        function startCamera(cameraId) {
+            document.getElementById('camera-status').innerText = "Scanning...";
+            html5QrCode.start(
+                cameraId, 
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 },
+                    aspectRatio: 1.0
+                },
+                async (decodedText, decodedResult) => {
+                    if(scanLock) return;
+                    scanLock = true;
+                    await processScan(decodedText);
+                    setTimeout(() => scanLock = false, 2500);
+                },
+                (errorMessage) => {
+                    // ignore frame errors
+                }
+            ).catch(err => {
+                console.log(err);
+                document.getElementById('camera-status').innerText = "Error Starting Camera";
             });
+        }
 
-            if (password === "200431504082") {
-                document.getElementById('loader').classList.remove('hidden');
-                // Remove Members, Sessions, Logs, Committees
-                const updates = {};
-                updates['members'] = null;
-                updates['sessions'] = null;
-                updates['logs'] = null;
-                updates['committees'] = null;
-                
-                await update(ref(db), updates);
-                document.getElementById('loader').classList.add('hidden');
-                Swal.fire('Reset Complete', 'System has been wiped.', 'success').then(() => location.reload());
-            } else if (password) {
-                Swal.fire('Access Denied', 'Incorrect Password', 'error');
+        window.triggerManualScan = () => {
+            const val = document.getElementById('manual-id-input-main').value;
+            if(!val) return Swal.fire('Error', 'Enter an ID', 'warning');
+            processScan(val.toUpperCase());
+            document.getElementById('manual-id-input-main').value = ''; // clear input
+        }
+
+        window.processScan = async (rawID) => {
+            const sessId = document.getElementById('scanner-session-select').value;
+            if(!sessId) { Swal.fire('Select Session', '', 'warning'); return; }
+            
+            const id = rawID.trim();
+            const key = id.replace('/','_');
+            const memSnap = await get(child(ref(db, 'members'), key));
+            
+            if(!memSnap.exists()) {
+                showScanModal('error', 'Invalid ID', id);
+                return;
+            }
+            const m = memSnap.val();
+            
+            const logRef = child(ref(db, `logs/${sessId}`), key);
+            const logSnap = await get(logRef);
+            
+            if(logSnap.exists()) {
+                const t = new Date(logSnap.val().timestamp).toLocaleTimeString();
+                showScanModal('warning', 'ALREADY TAKEN', `Issued at ${t}`);
+            } else {
+                showScanModal('success', m.name, `${m.committee} | ${m.type}`, () => {
+                    set(logRef, { timestamp: Date.now(), scanner: currentUser.uid });
+                    document.getElementById('scan-result-modal').classList.add('hidden');
+                    const Toast = Swal.mixin({toast: true, position: 'top-end', showConfirmButton: false, timer: 3000});
+                    Toast.fire({icon: 'success', title: 'Meal Issued'});
+                });
             }
         };
 
-        // --- DASHBOARD & SESSIONS ---
+        function showScanModal(type, title, msg, cb) {
+            const m = document.getElementById('scan-result-modal');
+            const c = document.getElementById('result-content');
+            const color = type==='success'?'text-green-500':(type==='warning'?'text-yellow-500':'text-red-500');
+            const icon = type==='success'?'fa-check-circle':(type==='warning'?'fa-exclamation-triangle':'fa-times-circle');
+            
+            let btn = cb ? `<button id="issue-conf-btn" class="w-full bg-green-500 text-white py-3 rounded-xl font-bold mt-4 animate-pulse">ISSUE MEAL</button>` : '';
+            c.innerHTML = `<i class="fas ${icon} ${color} text-6xl mb-4"></i><h3 class="text-2xl font-bold">${title}</h3><p class="text-gray-500">${msg}</p>${btn}`;
+            m.classList.remove('hidden');
+            if(cb) document.getElementById('issue-conf-btn').onclick = cb;
+        }
+
+        // --- DASHBOARD (EXISTING LOGIC) ---
         function initAdminDashboard() {
             onValue(ref(db), (snapshot) => {
                 const data = snapshot.val() || {};
@@ -505,11 +650,11 @@
                 document.getElementById('stat-active-sessions').innerText = activeCount;
                 document.getElementById('stat-coverage').innerText = totalMembers > 0 ? Math.round((totalIssued / (totalMembers * Object.keys(sessions).length || 1)) * 100) + '%' : '0%';
                 
-                // Populate Sessions List in Session Tab
+                // Populate Sessions List
                 const sList = document.getElementById('sessions-list');
                 const scannerSel = document.getElementById('scanner-session-select');
                 sList.innerHTML = '';
-                scannerSel.innerHTML = '<option value="">Select Session...</option>';
+                // Note: scannerSel cleared in initScanner, not here to avoid conflict
                 
                 for(const [id, d] of Object.entries(sessions)) {
                     sList.innerHTML += `
@@ -524,11 +669,11 @@
                             </label>
                         </div>
                     `;
-                    if(d.active) scannerSel.innerHTML += `<option value="${id}">${d.name}</option>`;
                 }
             });
         }
 
+        // --- OTHER FUNCTIONS (Existing) ---
         window.addSession = () => {
             const name = document.getElementById('sess-name').value;
             const count = document.getElementById('sess-count').value;
@@ -541,14 +686,11 @@
                 remove(ref(db, `logs/${id}`));
             }
         };
-
-        // --- MEMBERS & COMMITTEES ---
         window.addCommittee = () => {
             const n = document.getElementById('new-committee-name').value;
             if(n) push(ref(db, 'committees'), { name: n });
             document.getElementById('new-committee-name').value = '';
         };
-
         function loadCommitteesAndMembers() {
             onValue(ref(db, 'committees'), s => {
                 const l = document.getElementById('committee-list');
@@ -564,11 +706,10 @@
                 const b = document.getElementById('members-table-body');
                 b.innerHTML = '';
                 const m = s.val() || {};
-                window.allMembers = m; // Cache for search
+                window.allMembers = m;
                 renderMembers(m);
             });
         }
-        
         function renderMembers(m) {
              const b = document.getElementById('members-table-body');
              b.innerHTML = '';
@@ -583,7 +724,6 @@
                     </tr>`;
             }
         }
-
         window.filterMembers = () => {
             const term = document.getElementById('search-member').value.toLowerCase();
             const filtered = {};
@@ -592,7 +732,6 @@
             }
             renderMembers(filtered);
         }
-
         window.registerMember = async () => {
             const name = document.getElementById('reg-name').value;
             const com = document.getElementById('reg-committee').value;
@@ -606,8 +745,6 @@
                 document.getElementById('reg-name').value = '';
             } else { Swal.fire('Error', 'Fill all fields', 'warning'); }
         };
-
-        // --- PDF ID GENERATION (FIXED QR) ---
         window.loadCommitteesForIDs = () => {
              onValue(ref(db, 'committees'), snap => {
                  const comms = snap.val() || {};
@@ -616,143 +753,96 @@
                  for(const [id, d] of Object.entries(comms)) sel.innerHTML += `<option value="${d.name}">${d.name}</option>`;
             });
         }
-
         window.generateIDPDF = async () => {
             const committee = document.getElementById('id-print-committee').value;
             if(!committee) return Swal.fire('Select Committee', '', 'warning');
-            
             document.getElementById('id-loading').classList.remove('hidden');
-
             const snap = await get(ref(db, 'members'));
             const members = Object.values(snap.val() || {}).filter(m => m.committee === committee);
-            
             if(members.length === 0) {
                 document.getElementById('id-loading').classList.add('hidden');
                 return Swal.fire('No Members', 'No members found in this committee', 'info');
             }
-
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
-            const cardW = 90, cardH = 55; // Standard ID size
+            const cardW = 90, cardH = 55;
             let x = 10, y = 10;
-
             for (let i = 0; i < members.length; i++) {
                 const m = members[i];
-                
-                // Draw Card Border
-                doc.setDrawColor(200);
-                doc.rect(x, y, cardW, cardH);
-                
-                // Header
-                doc.setFillColor(236, 72, 153); // Pink
-                doc.rect(x, y, cardW, 12, 'F');
-                doc.setTextColor(255);
-                doc.setFontSize(12);
-                doc.setFont("helvetica", "bold");
-                doc.text("FOODFLOW CAMP", x + cardW/2, y + 8, { align: 'center' });
-
-                // Content
+                doc.setDrawColor(200); doc.rect(x, y, cardW, cardH);
+                doc.setFillColor(236, 72, 153); doc.rect(x, y, cardW, 12, 'F');
+                doc.setTextColor(255); doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.text("FOODFLOW CAMP", x + cardW/2, y + 8, { align: 'center' });
                 doc.setTextColor(0);
-                
-                // Generate QR Code using correct library
                 try {
                     const qrDataUrl = await QRCode.toDataURL(m.id, { margin: 1 });
                     doc.addImage(qrDataUrl, 'PNG', x + 5, y + 15, 30, 30);
                 } catch(e) { console.error(e); }
-
-                doc.setFontSize(14);
-                doc.text(m.id, x + 60, y + 25, { align: 'center' });
-                
-                doc.setFontSize(10);
-                doc.setFont("helvetica", "normal");
-                const splitName = doc.splitTextToSize(m.name, 50);
-                doc.text(splitName, x + 60, y + 35, { align: 'center' });
-                
-                doc.setFontSize(8);
-                doc.setTextColor(m.type === 'Veg' ? 'green' : 'red');
-                doc.text(m.type.toUpperCase(), x + 60, y + 48, { align: 'center' });
-
-                // Positioning for next card (2 columns, 5 rows)
-                if (i % 2 === 0) {
-                    x += cardW + 5; 
-                } else {
-                    x = 10; 
-                    y += cardH + 5;
-                }
-                
-                if (y > 280) { // New Page
-                    doc.addPage();
-                    x = 10; y = 10;
-                }
+                doc.setFontSize(14); doc.text(m.id, x + 60, y + 25, { align: 'center' });
+                doc.setFontSize(10); doc.setFont("helvetica", "normal");
+                const splitName = doc.splitTextToSize(m.name, 50); doc.text(splitName, x + 60, y + 35, { align: 'center' });
+                doc.setFontSize(8); doc.setTextColor(m.type === 'Veg' ? 'green' : 'red'); doc.text(m.type.toUpperCase(), x + 60, y + 48, { align: 'center' });
+                if (i % 2 === 0) { x += cardW + 5; } else { x = 10; y += cardH + 5; }
+                if (y > 280) { doc.addPage(); x = 10; y = 10; }
             }
-            
             doc.save(`${committee}_IDs.pdf`);
             document.getElementById('id-loading').classList.add('hidden');
         };
 
-        // --- SCANNER LOGIC ---
-        function initScanner() {
-            onValue(ref(db, 'sessions'), snap => {
-                const sess = snap.val() || {};
-                const sel = document.getElementById('scanner-session-select');
-                sel.innerHTML = '<option value="">Select Session...</option>';
-                for(const [id, d] of Object.entries(sess)) if(d.active) sel.innerHTML += `<option value="${id}">${d.name}</option>`;
-            });
-
-            const qr = new Html5Qrcode("qr-reader");
-            qr.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, 
-                async (txt) => {
-                    if(scanLock) return;
-                    scanLock = true;
-                    await processScan(txt);
-                    setTimeout(() => scanLock = false, 2500);
-                }
-            );
-        }
-
-        window.processScan = async (rawID) => {
-            const sessId = document.getElementById('scanner-session-select').value;
-            if(!sessId) { Swal.fire('Select Session', '', 'warning'); return; }
-            
-            const id = rawID.trim();
-            const key = id.replace('/','_');
-            const memSnap = await get(child(ref(db, 'members'), key));
-            
-            if(!memSnap.exists()) {
-                showScanModal('error', 'Invalid ID', id);
-                return;
-            }
-            const m = memSnap.val();
-            
-            const logRef = child(ref(db, `logs/${sessId}`), key);
-            const logSnap = await get(logRef);
-            
-            if(logSnap.exists()) {
-                const t = new Date(logSnap.val().timestamp).toLocaleTimeString();
-                showScanModal('warning', 'ALREADY TAKEN', `Issued at ${t}`);
-            } else {
-                showScanModal('success', m.name, `${m.committee} | ${m.type}`, () => {
-                    set(logRef, { timestamp: Date.now(), scanner: currentUser.uid });
-                    document.getElementById('scan-result-modal').classList.add('hidden');
-                    const Toast = Swal.mixin({toast: true, position: 'top-end', showConfirmButton: false, timer: 3000});
-                    Toast.fire({icon: 'success', title: 'Meal Issued'});
-                });
-            }
+        // --- STAFF & RESET (Existing) ---
+        window.createStaffUser = async () => {
+            const email = document.getElementById('staff-email').value;
+            const pass = document.getElementById('staff-pass').value;
+            const role = document.getElementById('staff-role').value;
+            if(!email || !pass) return Swal.fire('Missing Data', 'Please fill email and password', 'warning');
+            try {
+                const uc = await createUserWithEmailAndPassword(auth, email, pass);
+                await set(ref(db, 'users/' + uc.user.uid), { email, role });
+                Swal.fire('Success', 'Staff Created! You will be logged out to verify.', 'success').then(() => location.reload());
+            } catch(e) { Swal.fire('Error', e.message, 'error'); }
         };
-
-        function showScanModal(type, title, msg, cb) {
-            const m = document.getElementById('scan-result-modal');
-            const c = document.getElementById('result-content');
-            const color = type==='success'?'text-green-500':(type==='warning'?'text-yellow-500':'text-red-500');
-            const icon = type==='success'?'fa-check-circle':(type==='warning'?'fa-exclamation-triangle':'fa-times-circle');
-            
-            let btn = cb ? `<button id="issue-conf-btn" class="w-full bg-green-500 text-white py-3 rounded-xl font-bold mt-4 animate-pulse">ISSUE MEAL</button>` : '';
-            c.innerHTML = `<i class="fas ${icon} ${color} text-6xl mb-4"></i><h3 class="text-2xl font-bold">${title}</h3><p class="text-gray-500">${msg}</p>${btn}`;
-            m.classList.remove('hidden');
-            if(cb) document.getElementById('issue-conf-btn').onclick = cb;
-        }
-
-        // --- UTILS ---
+        window.loadStaffList = () => {
+            const tbody = document.getElementById('staff-list-body');
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4">Loading...</td></tr>';
+            onValue(ref(db, 'users'), (snapshot) => {
+                const users = snapshot.val() || {};
+                tbody.innerHTML = '';
+                if(Object.keys(users).length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4">No staff found.</td></tr>';
+                    return;
+                }
+                Object.entries(users).forEach(([uid, user]) => {
+                    tbody.innerHTML += `
+                        <tr class="bg-white border-b hover:bg-gray-50">
+                            <td class="px-4 py-3">${user.email}</td>
+                            <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs font-bold ${user.role==='admin'?'bg-purple-100 text-purple-600':'bg-blue-100 text-blue-600'}">${user.role.toUpperCase()}</span></td>
+                            <td class="px-4 py-3">${user.role !== 'admin' ? `<button onclick="removeStaff('${uid}')" class="text-red-500 hover:text-red-700 font-medium">Remove</button>` : ''}</td>
+                        </tr>`;
+                });
+            });
+        };
+        window.removeStaff = (uid) => {
+            Swal.fire({
+                title: 'Remove Staff?',
+                text: "This removes database access but not the Auth account (requires Firebase Admin SDK).",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, remove'
+            }).then((result) => {
+                if(result.isConfirmed) { remove(ref(db, `users/${uid}`)); }
+            });
+        };
+        window.systemReset = async () => {
+            const { value: password } = await Swal.fire({
+                title: 'Enter Admin Password', input: 'password', inputLabel: 'Password required to reset system', inputPlaceholder: 'Enter your password', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'RESET EVERYTHING'
+            });
+            if (password === "200431504082") {
+                document.getElementById('loader').classList.remove('hidden');
+                const updates = {}; updates['members'] = null; updates['sessions'] = null; updates['logs'] = null; updates['committees'] = null;
+                await update(ref(db), updates);
+                document.getElementById('loader').classList.add('hidden');
+                Swal.fire('Reset Complete', 'System has been wiped.', 'success').then(() => location.reload());
+            } else if (password) { Swal.fire('Access Denied', 'Incorrect Password', 'error'); }
+        };
         window.showSetupModal = () => document.getElementById('setup-modal').classList.remove('hidden');
         window.verifySetupCode = () => {
             if(document.getElementById('setup-code').value === "200431504082") {
@@ -770,7 +860,6 @@
                 location.reload();
             } catch(e) { Swal.fire('Error', e.message, 'error'); }
         };
-
         window.exportFullBackup = async () => {
             const d = (await get(ref(db))).val();
             const z = new JSZip();
