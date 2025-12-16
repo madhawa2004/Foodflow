@@ -38,8 +38,8 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s; }
         ::-webkit-scrollbar { width: 0px; background: transparent; }
         
-        .glass-panel { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07); }
-        .dark .glass-panel { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
+        .glass-panel { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.05); }
+        .dark .glass-panel { background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.3); }
         
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
         .float-anim { animation: float 6s ease-in-out infinite; }
@@ -54,6 +54,21 @@
         .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
         .dark .skeleton { background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%); }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* Credit Badge Style */
+        .credit-badge {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #94A3B8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid rgba(0,0,0,0.05);
+            display: inline-block;
+        }
+        .dark .credit-badge { background: rgba(255, 255, 255, 0.05); border-color: rgba(255,255,255,0.05); color: #64748B; }
     </style>
 </head>
 <body class="bg-[#F8FAFC] text-slate-800 dark:bg-darkbg dark:text-slate-100 overflow-hidden h-screen flex flex-col">
@@ -101,8 +116,8 @@
             </form>
             
             <div class="mt-8 text-center">
-                <button onclick="showSetupModal()" class="text-xs font-bold text-gray-400 hover:text-blue-500 transition uppercase tracking-widest">Initialize System</button>
-                <p class="text-[10px] text-gray-400 mt-6 font-mono opacity-50">Dev by Madhawa Basnayake</p>
+                <button onclick="showSetupModal()" class="text-xs font-bold text-gray-400 hover:text-blue-500 transition uppercase tracking-widest mb-6">Initialize System</button>
+                <div class="credit-badge">Dev by Madhawa Basnayake</div>
             </div>
         </div>
     </div>
@@ -180,11 +195,11 @@
                 </div>
             </nav>
 
-            <div class="p-5 border-t border-gray-100 dark:border-slate-800">
+            <div class="p-5 border-t border-gray-100 dark:border-slate-800 flex flex-col items-center">
                 <button onclick="logout()" class="w-full bg-red-50 dark:bg-red-900/20 text-red-500 p-4 rounded-2xl flex items-center justify-center gap-3 font-bold hover:bg-red-100 transition">
                     <i class="fas fa-sign-out-alt"></i> Log Out
                 </button>
-                <p class="text-[10px] text-center text-gray-300 mt-4 font-mono opacity-50">Dev by Madhawa Basnayake</p>
+                <div class="credit-badge mt-6">Dev by Madhawa Basnayake</div>
             </div>
         </div>
 
@@ -205,12 +220,12 @@
                 <div onclick="switchTab('reports')" class="desk-nav-item p-4 rounded-2xl flex items-center gap-3 cursor-pointer text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition"><i class="fas fa-chart-line w-6"></i> Analytics</div>
                 <div onclick="switchTab('settings')" class="desk-nav-item p-4 rounded-2xl flex items-center gap-3 cursor-pointer text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition"><i class="fas fa-cog w-6"></i> Settings</div>
             </nav>
-            <div class="mt-auto pt-4 flex flex-col gap-3">
-                <div class="flex gap-3">
+            <div class="mt-auto pt-4 flex flex-col gap-3 items-center">
+                <div class="flex gap-3 w-full">
                     <button onclick="toggleTheme()" class="flex-1 bg-gray-100 dark:bg-slate-800 p-3 rounded-xl text-yellow-500"><i class="fas fa-sun dark:hidden"></i><i class="fas fa-moon hidden dark:block text-blue-400"></i></button>
                     <button onclick="logout()" class="flex-[3] bg-red-50 dark:bg-red-900/20 text-red-500 p-3 rounded-xl font-bold hover:bg-red-100 transition">Log Out</button>
                 </div>
-                <p class="text-[10px] text-center text-gray-300 font-mono opacity-50">Dev by Madhawa Basnayake</p>
+                <div class="credit-badge mt-4">Dev by Madhawa Basnayake</div>
             </div>
         </div>
 
@@ -374,46 +389,53 @@
         </main>
     </div>
 
-    <div id="scanner-view" class="hidden h-screen bg-slate-900 flex flex-col items-center justify-center p-4 relative overflow-hidden">
-        <div class="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-blue-600/20 to-transparent pointer-events-none"></div>
+    <div id="scanner-view" class="hidden h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-blue-100/50 to-transparent pointer-events-none"></div>
 
-        <div class="w-full max-w-md bg-white/10 backdrop-blur-xl p-6 rounded-[40px] shadow-2xl flex flex-col gap-5 border border-white/10 relative z-10">
+        <div class="w-full max-w-md glass-panel p-8 rounded-[40px] shadow-2xl flex flex-col gap-6 border border-white/50 relative z-10">
             <div class="flex justify-between items-center px-2">
                 <div>
-                     <h2 class="text-white font-black text-2xl tracking-tighter">SCAN MODE</h2>
-                     <p class="text-xs text-blue-300 font-bold uppercase tracking-widest">Active Session</p>
+                     <h2 class="text-slate-800 font-black text-2xl tracking-tighter">SCAN MODE</h2>
+                     <p class="text-xs text-blue-500 font-bold uppercase tracking-widest">Active Session</p>
                 </div>
-                <button onclick="logout()" class="w-10 h-10 bg-white/10 rounded-full text-white hover:bg-red-500/80 transition"><i class="fas fa-sign-out-alt"></i></button>
+                <button onclick="logout()" class="w-12 h-12 bg-gray-100 rounded-full text-slate-500 hover:bg-red-100 hover:text-red-500 transition"><i class="fas fa-sign-out-alt"></i></button>
             </div>
 
-            <div class="scanner-viewfinder aspect-square w-full relative ring-4 ring-white/20 shadow-2xl">
+            <div class="scanner-viewfinder aspect-square w-full relative ring-8 ring-white/50 shadow-inner rounded-[35px] overflow-hidden bg-black">
                 <div id="qr-reader" class="w-full h-full object-cover"></div>
-                <div class="absolute inset-0 border-[3px] border-blue-400/50 rounded-[35px] m-6 pointer-events-none"></div>
+                <div class="absolute inset-0 border-[3px] border-white/30 rounded-[35px] m-6 pointer-events-none"></div>
                 <div class="absolute top-0 left-0 w-full h-1 bg-blue-500 shadow-[0_0_20px_#3b82f6] animate-[scan_2s_infinite]"></div>
             </div>
 
             <div class="space-y-3">
-                <div class="grid grid-cols-2 gap-2">
-                    <select id="scanner-camera-select" class="bg-black/30 text-white p-3 rounded-xl text-xs font-bold outline-none border border-white/10"><option value="">Auto Cam</option></select>
-                    <select id="scanner-session-select" class="bg-black/30 text-white p-3 rounded-xl text-xs font-bold outline-none border border-white/10"><option value="">Select Session...</option></select>
+                <div class="grid grid-cols-2 gap-3">
+                    <select id="scanner-camera-select" class="bg-white text-slate-700 p-4 rounded-2xl text-xs font-bold outline-none border border-gray-100 shadow-sm"><option value="">Auto Cam</option></select>
+                    <select id="scanner-session-select" class="bg-white text-slate-700 p-4 rounded-2xl text-xs font-bold outline-none border border-gray-100 shadow-sm"><option value="">Select Session...</option></select>
                 </div>
+                
                 <div class="flex gap-2">
-                     <input type="text" id="manual-id-input-main" placeholder="ID (CS/01)" class="flex-1 bg-white/10 border border-white/10 py-4 text-center rounded-2xl outline-none text-white placeholder-gray-400 font-bold uppercase tracking-widest focus:bg-white/20 transition">
-                    <button onclick="triggerManualScan()" class="bg-blue-600 text-white w-16 rounded-2xl shadow-lg hover:bg-blue-500 active:scale-95 transition"><i class="fas fa-arrow-right text-lg"></i></button>
+                     <input type="text" id="manual-id-input-main" placeholder="ID (CS/01)" class="flex-1 bg-white border border-gray-100 py-4 text-center rounded-2xl outline-none text-slate-800 placeholder-gray-400 font-bold uppercase tracking-widest shadow-sm focus:border-blue-500 transition">
+                    <button onclick="triggerManualScan()" class="bg-blue-600 text-white w-20 rounded-2xl shadow-lg hover:bg-blue-700 active:scale-95 transition"><i class="fas fa-arrow-right text-lg"></i></button>
                 </div>
-                <button onclick="issueGuestTicket()" class="w-full bg-purple-600/80 hover:bg-purple-600 text-white py-3 rounded-2xl font-bold text-sm border border-purple-400/30 shadow-lg mt-2">
+                
+                <button onclick="issueGuestTicket()" class="w-full bg-purple-50 hover:bg-purple-100 text-purple-600 py-4 rounded-2xl font-bold text-sm border border-purple-100 transition">
                     <i class="fas fa-ticket-alt mr-2"></i> Issue Guest Ticket
                 </button>
             </div>
         </div>
+        
+        <div class="absolute bottom-8 left-0 right-0 text-center">
+            <div class="credit-badge">Dev by Madhawa Basnayake</div>
+        </div>
+
         <style> @keyframes scan { 0% { top: 10%; opacity: 0; } 50% { opacity: 1; } 100% { top: 90%; opacity: 0; } } </style>
     </div>
 
-    <div id="scan-result-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden z-[200] flex items-center justify-center p-6">
-        <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-[40px] p-8 text-center shadow-2xl transition-all transform scale-100 border border-gray-200 dark:border-slate-700 relative overflow-hidden">
+    <div id="scan-result-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-[200] flex items-center justify-center p-6">
+        <div class="glass-panel w-full max-w-sm rounded-[40px] p-8 text-center shadow-2xl transition-all transform scale-100 relative overflow-hidden bg-white">
             <div id="result-confetti-origin" class="absolute top-0 left-1/2"></div>
             <div id="result-content" class="mb-6 relative z-10"></div>
-            <button onclick="document.getElementById('scan-result-modal').classList.add('hidden')" class="w-full bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white py-4 rounded-2xl font-bold text-lg hover:bg-slate-200 transition">Close</button>
+            <button onclick="document.getElementById('scan-result-modal').classList.add('hidden')" class="w-full bg-slate-100 text-slate-800 py-4 rounded-2xl font-bold text-lg hover:bg-slate-200 transition">Close</button>
         </div>
     </div>
 
