@@ -3,464 +3,417 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FoodFlow - Camp Food Management</title>
+    <title>FoodFlow Pro</title>
     
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiRm9vZEZsb3cgUHJvIiwic2hvcnRfbmFtZSI6IkZvb2RGbG93Iiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiNmZmZmZmYiLCJ0aGVtZV9jb2xvciI6IiMwMDAwMDAiLCJpY29ucyI6W3sic3JjIjoiaHR0cHM6Ly9jZG4tYWljb25zLndpZGdldC1jbG91ZC5jb20vdXRlbnNpbHMucG5nIiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3BuZyJ9XX0=">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: { primary: '#3B82F6', darkbg: '#0F172A' },
+                    borderRadius: { 'xl': '1.5rem', '2xl': '2rem', '3xl': '2.5rem' }
+                }
+            }
+        }
+    </script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Poppins', sans-serif; background-color: #F3F4F6; -webkit-tap-highlight-color: transparent; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s; }
+        ::-webkit-scrollbar { width: 0px; background: transparent; }
         
-        /* Smooth Sidebar Transitions */
-        .sidebar { background-color: #1F2937; color: white; transition: all 0.3s ease; }
-        .nav-item { transition: all 0.2s; border-radius: 999px; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; }
-        .nav-item:hover, .nav-item.active { background-color: #3B82F6; color: white; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); }
+        .glass-panel { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07); }
+        .dark .glass-panel { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
         
-        .stat-card { border-radius: 24px; transition: transform 0.2s; border: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
-        .stat-card:hover { transform: translateY(-3px); }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        .float-anim { animation: float 6s ease-in-out infinite; }
+        
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; opacity: 0; }
+        @keyframes fadeIn { to { opacity: 1; } }
 
-        /* Mobile specific adjustments */
-        @media (max-width: 768px) {
-            .sidebar { 
-                position: fixed; 
-                bottom: 20px; 
-                left: 20px; 
-                right: 20px; 
-                width: auto; 
-                height: 70px; 
-                flex-direction: row; 
-                z-index: 50; 
-                padding: 0 10px; 
-                justify-content: space-between; 
-                border-radius: 24px; 
-                background-color: rgba(31, 41, 55, 0.95);
-                backdrop-filter: blur(10px);
-                box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            }
-            .sidebar h1, .nav-text, .logout-txt { display: none; }
-            .nav-item { margin-bottom: 0; padding: 10px; border-radius: 16px; }
-            .nav-item:hover, .nav-item.active { padding-left: 10px; } /* Reset padding shift on mobile */
-            
-            .main-content { margin-bottom: 100px; padding: 16px; } /* Add bottom padding so nav doesn't cover content */
-            
-            /* Hide scrollbar on mobile nav */
-            .sidebar nav { overflow-x: auto; -webkit-overflow-scrolling: touch; display: flex; gap: 4px; width: 100%; justify-content: space-between; }
-            .sidebar nav::-webkit-scrollbar { display: none; }
-        }
-
-        /* Custom Scrollbar for desktop */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+        input, select { transition: all 0.2s ease; }
+        input:focus, select:focus { transform: scale(1.02); }
+        button:active { transform: scale(0.95); }
         
-        .loader { border-top-color: #3B82F6; animation: spinner 1s linear infinite; }
-        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Button & Input Styling */
-        input, select { border-radius: 16px !important; }
-        button { border-radius: 999px !important; transition: transform 0.1s active:scale-95; }
-        
-        .scanner-viewfinder { border-radius: 24px; overflow: hidden; position: relative; background: #000; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+        .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        .dark .skeleton { background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%); }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     </style>
 </head>
-<body class="text-gray-800 h-screen overflow-hidden flex flex-col">
+<body class="bg-[#F8FAFC] text-slate-800 dark:bg-darkbg dark:text-slate-100 overflow-hidden h-screen flex flex-col">
 
-    <div id="loader" class="fixed inset-0 bg-white z-[100] flex items-center justify-center">
-        <div class="flex flex-col items-center">
-            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-16 w-16 mb-4"></div>
-            <h2 class="text-gray-500 font-medium animate-pulse">Loading FoodFlow...</h2>
+    <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[200] flex flex-col gap-2 w-11/12 max-w-sm"></div>
+
+    <div id="loader" class="fixed inset-0 bg-white dark:bg-darkbg z-[150] flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="relative w-24 h-24">
+            <div class="absolute inset-0 border-t-4 border-blue-500 rounded-full animate-spin"></div>
+            <div class="absolute inset-4 border-t-4 border-purple-500 rounded-full animate-spin reverse"></div>
+            <i class="fas fa-utensils absolute inset-0 flex items-center justify-center text-2xl text-gray-400"></i>
         </div>
+        <h2 class="mt-6 text-lg font-bold tracking-widest text-gray-500 animate-pulse">INITIALIZING...</h2>
     </div>
 
-    <div id="login-view" class="flex-grow flex items-center justify-center bg-gray-900 px-4">
-        <div class="bg-white p-8 rounded-[32px] shadow-2xl w-full max-w-md border-4 border-gray-100">
-            <div class="text-center mb-8">
-                <div class="w-20 h-20 bg-blue-500 rounded-3xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-blue-500/30">
-                    <i class="fas fa-utensils text-white text-3xl"></i>
+    <div id="login-view" class="flex-grow flex flex-col items-center justify-center px-6 relative w-full h-full">
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
+            <div class="absolute top-[-20%] left-[-20%] w-96 h-96 bg-blue-500/20 rounded-full blur-[100px] animate-pulse"></div>
+            <div class="absolute bottom-[-20%] right-[-20%] w-96 h-96 bg-purple-500/20 rounded-full blur-[100px] animate-pulse delay-1000"></div>
+        </div>
+
+        <div class="glass-panel p-10 rounded-[40px] shadow-2xl w-full max-w-sm relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+            
+            <div class="text-center mb-10">
+                <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[30px] mx-auto flex items-center justify-center mb-6 shadow-xl shadow-blue-500/40 float-anim">
+                    <i class="fas fa-utensils text-white text-4xl"></i>
                 </div>
-                <h2 class="text-3xl font-bold text-gray-800 tracking-tight">FoodFlow</h2>
-                <p class="text-gray-400 text-sm mt-1">Camp Management System</p>
+                <h1 class="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">FoodFlow</h1>
+                <p class="text-gray-400 text-sm font-medium mt-2 tracking-wide">Next-Gen Camp Manager</p>
             </div>
+
             <form id="login-form" class="space-y-5">
-                <div class="space-y-2">
-                    <label class="text-xs font-bold text-gray-500 ml-4 uppercase">Email</label>
-                    <input type="email" id="login-email" class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition" placeholder="admin@example.com" required>
+                <div class="group relative">
+                    <i class="fas fa-envelope absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors"></i>
+                    <input type="email" id="login-email" class="w-full pl-12 pr-5 py-4 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 outline-none font-medium dark:text-white" placeholder="Email" required>
                 </div>
-                <div class="space-y-2">
-                    <label class="text-xs font-bold text-gray-500 ml-4 uppercase">Password</label>
-                    <input type="password" id="login-pass" class="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition" placeholder="••••••••" required>
+                <div class="group relative">
+                    <i class="fas fa-lock absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors"></i>
+                    <input type="password" id="login-pass" class="w-full pl-12 pr-5 py-4 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 outline-none font-medium dark:text-white" placeholder="Password" required>
                 </div>
-                <button type="submit" class="w-full bg-gray-900 text-white py-4 rounded-full font-bold text-lg hover:bg-gray-800 shadow-xl hover:shadow-2xl transition transform hover:-translate-y-1">Sign In</button>
+                <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-1 transition-all duration-300">
+                    Sign In <i class="fas fa-arrow-right ml-2"></i>
+                </button>
             </form>
-            <div class="mt-8 text-center border-t pt-6">
-                <button onclick="showSetupModal()" class="text-blue-500 text-sm font-semibold hover:text-blue-700 transition">Initialize System</button>
+            
+            <div class="mt-8 text-center">
+                <button onclick="showSetupModal()" class="text-xs font-bold text-gray-400 hover:text-blue-500 transition uppercase tracking-widest">Initialize System</button>
+                <p class="text-[10px] text-gray-400 mt-6 font-mono opacity-50">Dev by Madhawa Basnayake</p>
             </div>
         </div>
     </div>
 
-    <div id="setup-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-[32px] p-8 w-full max-w-sm shadow-2xl transform transition-all scale-100">
+    <div id="setup-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md hidden z-[110] flex items-center justify-center p-6">
+        <div class="glass-panel rounded-[35px] p-8 w-full max-w-sm shadow-2xl transform scale-100 transition-all">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-gray-800">System Setup</h3>
-                <button onclick="document.getElementById('setup-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
+                <h3 class="text-xl font-bold">System Setup</h3>
+                <button onclick="document.getElementById('setup-modal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-slate-700 flex items-center justify-center hover:rotate-90 transition"><i class="fas fa-times"></i></button>
             </div>
-            <input type="password" id="setup-code" placeholder="Master Code" class="w-full px-5 py-4 rounded-2xl bg-gray-50 border-none mb-4 outline-none focus:ring-2 focus:ring-blue-500">
-            <div id="setup-form" class="hidden space-y-4">
-                <input type="email" id="sa-email" placeholder="New Admin Email" class="w-full px-5 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-green-500">
-                <input type="password" id="sa-pass" placeholder="New Password" class="w-full px-5 py-4 rounded-2xl bg-gray-50 border-none outline-none focus:ring-2 focus:ring-green-500">
+            <input type="password" id="setup-code" placeholder="Master Code" class="w-full px-5 py-4 rounded-2xl bg-gray-100 dark:bg-slate-800 border-none mb-4 outline-none font-mono text-center tracking-[0.5em] text-lg focus:ring-2 focus:ring-blue-500">
+            <div id="setup-form" class="hidden space-y-3">
+                <input type="email" id="sa-email" placeholder="New Admin Email" class="w-full px-5 py-4 rounded-2xl bg-gray-100 dark:bg-slate-800 outline-none">
+                <input type="password" id="sa-pass" placeholder="New Password" class="w-full px-5 py-4 rounded-2xl bg-gray-100 dark:bg-slate-800 outline-none">
             </div>
             <div class="flex gap-3 mt-6">
-                <button onclick="verifySetupCode()" id="verify-btn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-full font-bold shadow-lg shadow-blue-500/30">Verify</button>
-                <button onclick="createSuperAdmin()" id="create-sa-btn" class="hidden flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-full font-bold shadow-lg shadow-green-500/30">Create Admin</button>
+                <button onclick="verifySetupCode()" id="verify-btn" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold shadow-lg">Verify</button>
+                <button onclick="createSuperAdmin()" id="create-sa-btn" class="hidden flex-1 bg-green-500 text-white py-3 rounded-xl font-bold shadow-lg">Create</button>
             </div>
         </div>
     </div>
 
-    <div id="admin-view" class="hidden flex h-screen bg-[#F3F4F6]">
-        <div class="sidebar w-72 flex flex-col py-8 px-6 md:h-full h-auto flex-shrink-0">
-            <div class="flex items-center gap-4 px-2 mb-10 md:flex hidden">
-                <div class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/40">
-                    <i class="fas fa-utensils text-white text-sm"></i>
-                </div>
-                <h1 class="text-2xl font-bold tracking-wide">FoodFlow</h1>
-            </div>
-            <nav class="flex-1 flex md:flex-col flex-row md:gap-3 gap-1 overflow-x-auto md:overflow-visible no-scrollbar items-center md:items-stretch">
-                <div onclick="switchTab('dashboard')" class="nav-item active p-3"><i class="fas fa-home w-6 text-center text-lg"></i> <span class="nav-text font-medium ml-3">Dashboard</span></div>
-                <div onclick="switchTab('logs')" class="nav-item p-3"><i class="fas fa-list-alt w-6 text-center text-lg"></i> <span class="nav-text font-medium ml-3">Logs</span></div>
-                <div onclick="switchTab('sessions')" class="nav-item p-3"><i class="fas fa-clock w-6 text-center text-lg"></i> <span class="nav-text font-medium ml-3">Sessions</span></div>
-                <div onclick="switchTab('registration')" class="nav-item p-3"><i class="fas fa-users w-6 text-center text-lg"></i> <span class="nav-text font-medium ml-3">Register</span></div>
-                <div onclick="switchTab('ids')" class="nav-item p-3"><i class="fas fa-id-card w-6 text-center text-lg"></i> <span class="nav-text font-medium ml-3">ID Cards</span></div>
-                <div onclick="switchTab('staff')" class="nav-item p-3"><i class="fas fa-user-shield w-6 text-center text-lg"></i> <span class="nav-text font-medium ml-3">Staff</span></div>
-                <div onclick="switchTab('reports')" class="nav-item p-3"><i class="fas fa-file-alt w-6 text-center text-lg"></i> <span class="nav-text font-medium ml-3">Reports</span></div>
-                <div onclick="switchTab('settings')" class="nav-item p-3"><i class="fas fa-cog w-6 text-center text-lg"></i> <span class="nav-text font-medium ml-3">Settings</span></div>
-            </nav>
-            <div class="md:block hidden mt-auto">
-                 <button onclick="logout()" class="w-full bg-gray-800 p-4 rounded-full flex items-center justify-center gap-3 hover:bg-red-500 hover:shadow-lg hover:shadow-red-500/30 transition-all text-gray-300 hover:text-white">
-                    <i class="fas fa-sign-out-alt"></i> <span class="logout-txt font-bold">Logout</span>
+    <div id="admin-view" class="hidden flex h-screen bg-[#F8FAFC] dark:bg-darkbg transition-colors duration-300">
+        
+        <header class="md:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 z-40 flex items-center justify-between px-5">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleMobileMenu()" class="w-10 h-10 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-gray-700 dark:text-gray-300 active:scale-90 transition">
+                    <i class="fas fa-bars"></i>
                 </button>
+                <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">FoodFlow</h1>
+            </div>
+            <button onclick="toggleTheme()" class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 dark:bg-slate-800 text-yellow-500 transition">
+                <i class="fas fa-sun dark:hidden"></i><i class="fas fa-moon hidden dark:block text-blue-400"></i>
+            </button>
+        </header>
+
+        <div id="mobile-menu-overlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300"></div>
+        <div id="mobile-drawer" class="fixed inset-y-0 left-0 w-80 bg-white dark:bg-slate-900 z-[51] transform -translate-x-full flex flex-col shadow-2xl transition-transform duration-300 rounded-r-[30px]">
+            <div class="p-8 border-b border-gray-100 dark:border-slate-800">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg text-white text-xl">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold dark:text-white">FoodFlow</h2>
+                        <p class="text-xs text-gray-400">Pro Edition</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="flex-1 overflow-y-auto p-5 space-y-2">
+                <div onclick="switchTab('dashboard')" class="drawer-item p-4 rounded-2xl flex items-center gap-4 cursor-pointer bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-bold transition-all">
+                    <i class="fas fa-th-large w-6 text-center"></i> <span>Dashboard</span>
+                </div>
+                <div onclick="switchTab('sessions')" class="drawer-item p-4 rounded-2xl flex items-center gap-4 cursor-pointer text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all">
+                    <i class="fas fa-clock w-6 text-center"></i> <span>Sessions</span>
+                </div>
+                <div onclick="switchTab('registration')" class="drawer-item p-4 rounded-2xl flex items-center gap-4 cursor-pointer text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all">
+                    <i class="fas fa-user-plus w-6 text-center"></i> <span>Registration</span>
+                </div>
+                <div onclick="switchTab('logs')" class="drawer-item p-4 rounded-2xl flex items-center gap-4 cursor-pointer text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all">
+                    <i class="fas fa-list-alt w-6 text-center"></i> <span>Logs & History</span>
+                </div>
+                <div onclick="switchTab('ids')" class="drawer-item p-4 rounded-2xl flex items-center gap-4 cursor-pointer text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all">
+                    <i class="fas fa-id-card w-6 text-center"></i> <span>ID Cards</span>
+                </div>
+                <div onclick="switchTab('staff')" class="drawer-item p-4 rounded-2xl flex items-center gap-4 cursor-pointer text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all">
+                    <i class="fas fa-user-shield w-6 text-center"></i> <span>Staff</span>
+                </div>
+                <div onclick="switchTab('reports')" class="drawer-item p-4 rounded-2xl flex items-center gap-4 cursor-pointer text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all">
+                    <i class="fas fa-chart-line w-6 text-center"></i> <span>Analytics</span>
+                </div>
+                <div onclick="switchTab('settings')" class="drawer-item p-4 rounded-2xl flex items-center gap-4 cursor-pointer text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all">
+                    <i class="fas fa-cog w-6 text-center"></i> <span>Settings</span>
+                </div>
+            </nav>
+
+            <div class="p-5 border-t border-gray-100 dark:border-slate-800">
+                <button onclick="logout()" class="w-full bg-red-50 dark:bg-red-900/20 text-red-500 p-4 rounded-2xl flex items-center justify-center gap-3 font-bold hover:bg-red-100 transition">
+                    <i class="fas fa-sign-out-alt"></i> Log Out
+                </button>
+                <p class="text-[10px] text-center text-gray-300 mt-4 font-mono opacity-50">Dev by Madhawa Basnayake</p>
             </div>
         </div>
 
-        <main class="main-content flex-1 overflow-y-auto p-4 md:p-10 ml-0 w-full">
-            <header class="flex justify-between items-center mb-8 sticky top-0 bg-[#F3F4F6]/90 backdrop-blur-md z-40 py-2">
-                <div>
-                    <h2 class="text-3xl font-bold text-gray-800" id="page-title">Dashboard</h2>
-                    <p class="text-gray-400 text-sm md:block hidden">Overview of camp activities</p>
+        <div class="hidden md:flex w-80 flex-col bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 h-full p-6 z-10 shadow-xl">
+            <div class="flex items-center gap-4 px-2 mb-10">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                    <i class="fas fa-utensils"></i>
                 </div>
-                <button onclick="logout()" class="md:hidden w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-red-500 hover:bg-red-50 transition"><i class="fas fa-sign-out-alt"></i></button>
-            </header>
+                <h1 class="text-2xl font-bold dark:text-white">FoodFlow</h1>
+            </div>
+            <nav class="flex-1 space-y-2">
+                <div onclick="switchTab('dashboard')" class="desk-nav-item active p-4 rounded-2xl flex items-center gap-3 cursor-pointer bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-bold"><i class="fas fa-th-large w-6"></i> Dashboard</div>
+                <div onclick="switchTab('sessions')" class="desk-nav-item p-4 rounded-2xl flex items-center gap-3 cursor-pointer text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition"><i class="fas fa-clock w-6"></i> Sessions</div>
+                <div onclick="switchTab('registration')" class="desk-nav-item p-4 rounded-2xl flex items-center gap-3 cursor-pointer text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition"><i class="fas fa-user-plus w-6"></i> Register</div>
+                <div onclick="switchTab('logs')" class="desk-nav-item p-4 rounded-2xl flex items-center gap-3 cursor-pointer text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition"><i class="fas fa-list-alt w-6"></i> Logs</div>
+                <div onclick="switchTab('ids')" class="desk-nav-item p-4 rounded-2xl flex items-center gap-3 cursor-pointer text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition"><i class="fas fa-id-card w-6"></i> ID Cards</div>
+                <div onclick="switchTab('staff')" class="desk-nav-item p-4 rounded-2xl flex items-center gap-3 cursor-pointer text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition"><i class="fas fa-user-shield w-6"></i> Staff</div>
+                <div onclick="switchTab('reports')" class="desk-nav-item p-4 rounded-2xl flex items-center gap-3 cursor-pointer text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition"><i class="fas fa-chart-line w-6"></i> Analytics</div>
+                <div onclick="switchTab('settings')" class="desk-nav-item p-4 rounded-2xl flex items-center gap-3 cursor-pointer text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition"><i class="fas fa-cog w-6"></i> Settings</div>
+            </nav>
+            <div class="mt-auto pt-4 flex flex-col gap-3">
+                <div class="flex gap-3">
+                    <button onclick="toggleTheme()" class="flex-1 bg-gray-100 dark:bg-slate-800 p-3 rounded-xl text-yellow-500"><i class="fas fa-sun dark:hidden"></i><i class="fas fa-moon hidden dark:block text-blue-400"></i></button>
+                    <button onclick="logout()" class="flex-[3] bg-red-50 dark:bg-red-900/20 text-red-500 p-3 rounded-xl font-bold hover:bg-red-100 transition">Log Out</button>
+                </div>
+                <p class="text-[10px] text-center text-gray-300 font-mono opacity-50">Dev by Madhawa Basnayake</p>
+            </div>
+        </div>
 
-            <div id="tab-dashboard" class="tab-content">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                    <div class="stat-card bg-white p-6">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Total Members</p>
-                                <h3 class="text-4xl font-bold text-gray-800" id="stat-total-members">0</h3>
-                            </div>
-                            <div class="p-3 bg-pink-100 rounded-2xl text-pink-600"><i class="fas fa-users text-xl"></i></div>
-                        </div>
+        <main class="main-content flex-1 overflow-y-auto p-5 pt-20 md:p-10 md:pt-10 w-full relative">
+            
+            <div id="tab-dashboard" class="tab-content fade-in">
+                <div class="flex justify-between items-end mb-8">
+                    <div>
+                        <h2 class="text-3xl font-extrabold text-slate-800 dark:text-white tracking-tight">Overview</h2>
+                        <p class="text-gray-400 font-medium mt-1">Real-time camp statistics</p>
                     </div>
-                     <div class="stat-card bg-white p-6">
-                        <div class="flex justify-between items-start">
-                             <div>
-                                <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Meals Issued</p>
-                                <h3 class="text-4xl font-bold text-gray-800" id="stat-issued-today">0</h3>
-                            </div>
-                            <div class="p-3 bg-blue-100 rounded-2xl text-blue-600"><i class="fas fa-utensils text-xl"></i></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                    <div class="stat-card glass-panel p-6 flex justify-between items-center group hover:scale-[1.02] transition-all">
+                        <div>
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Total Members</p>
+                            <h3 class="text-4xl font-black text-slate-800 dark:text-white" id="stat-total-members"><span class="skeleton w-10 h-8 block rounded"></span></h3>
                         </div>
+                        <div class="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-sm"><i class="fas fa-users text-2xl"></i></div>
                     </div>
-                     <div class="stat-card bg-white p-6">
-                        <div class="flex justify-between items-start">
-                             <div>
-                                <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Active Sessions</p>
-                                <h3 class="text-4xl font-bold text-gray-800" id="stat-active-sessions">0</h3>
-                            </div>
-                            <div class="p-3 bg-yellow-100 rounded-2xl text-yellow-600"><i class="fas fa-clock text-xl"></i></div>
+                    <div class="stat-card glass-panel p-6 flex justify-between items-center group hover:scale-[1.02] transition-all">
+                        <div>
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Meals Issued</p>
+                            <h3 class="text-4xl font-black text-slate-800 dark:text-white" id="stat-issued-today"><span class="skeleton w-10 h-8 block rounded"></span></h3>
                         </div>
+                        <div class="w-14 h-14 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center text-purple-600 dark:text-purple-400 shadow-sm"><i class="fas fa-utensils text-2xl"></i></div>
                     </div>
-                    <div class="stat-card bg-white p-6">
-                        <div class="flex justify-between items-start">
-                             <div>
-                                <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Coverage</p>
-                                <h3 class="text-4xl font-bold text-gray-800" id="stat-coverage">0%</h3>
-                            </div>
-                            <div class="p-3 bg-green-100 rounded-2xl text-green-600"><i class="fas fa-chart-pie text-xl"></i></div>
+                    <div class="stat-card glass-panel p-6 flex justify-between items-center group hover:scale-[1.02] transition-all">
+                        <div>
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Active Sessions</p>
+                            <h3 class="text-4xl font-black text-slate-800 dark:text-white" id="stat-active-sessions"><span class="skeleton w-10 h-8 block rounded"></span></h3>
                         </div>
+                        <div class="w-14 h-14 bg-green-100 dark:bg-green-900/30 rounded-2xl flex items-center justify-center text-green-600 dark:text-green-400 shadow-sm"><i class="fas fa-signal text-2xl"></i></div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-1.5 h-8 bg-blue-600 rounded-full"></div>
+                    <h3 class="text-xl font-bold text-gray-800 dark:text-white">Live Sessions</h3>
+                </div>
+                
+                <div id="session-stats-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-24">
+                    <div class="glass-panel p-6 rounded-[30px] h-48 skeleton opacity-50"></div>
+                    <div class="glass-panel p-6 rounded-[30px] h-48 skeleton opacity-50"></div>
+                </div>
+            </div>
+
+            <div id="tab-sessions" class="tab-content hidden fade-in">
+                <div class="glass-panel p-8 rounded-[35px] mb-8">
+                    <h3 class="font-bold text-xl mb-6 dark:text-white">Create New Session</h3>
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <input type="text" id="sess-name" placeholder="Session Name (e.g. Lunch)" class="flex-[2] p-5 bg-white dark:bg-slate-800 rounded-2xl outline-none font-medium dark:text-white shadow-sm border border-transparent focus:border-blue-500">
+                        <input type="number" id="sess-count" placeholder="Quota" class="flex-1 p-5 bg-white dark:bg-slate-800 rounded-2xl outline-none font-medium dark:text-white shadow-sm focus:border-blue-500 border border-transparent">
+                        <button onclick="addSession()" class="bg-slate-900 dark:bg-blue-600 text-white px-8 py-5 rounded-2xl font-bold shadow-lg hover:shadow-xl transition flex items-center justify-center gap-2">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+                </div>
+                <div id="sessions-list" class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-24"></div>
+            </div>
+
+            <div id="tab-registration" class="tab-content hidden fade-in">
+                <div class="glass-panel p-8 rounded-[35px] mb-8">
+                    <h3 class="font-bold text-xl mb-6 dark:text-white">Register Member</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <input type="text" id="reg-name" placeholder="Full Name" class="col-span-2 p-5 bg-white dark:bg-slate-800 rounded-2xl outline-none shadow-sm dark:text-white">
+                        <select id="reg-committee" class="p-5 bg-white dark:bg-slate-800 rounded-2xl outline-none shadow-sm dark:text-white cursor-pointer"><option>Select Committee</option></select>
+                        <select id="reg-type" class="p-5 bg-white dark:bg-slate-800 rounded-2xl outline-none shadow-sm dark:text-white cursor-pointer">
+                            <option value="Non-Veg">Non-Veg 🍗</option>
+                            <option value="Veg">Veg 🥗</option>
+                        </select>
+                        <button onclick="registerMember()" class="col-span-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold p-5 rounded-2xl shadow-lg mt-2">Register Now</button>
                     </div>
                 </div>
                 
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="w-1 h-6 bg-gray-800 rounded-full"></div>
-                    <h3 class="text-xl font-bold text-gray-800">Live Sessions</h3>
-                </div>
-                <div id="session-stats-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20"></div>
-            </div>
-
-            <div id="tab-logs" class="tab-content hidden">
-                <div class="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                        <h3 class="font-bold text-xl">System Logs</h3>
-                        <button onclick="loadSystemLogs()" class="text-sm bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-600 px-5 py-3 rounded-full font-bold transition"><i class="fas fa-sync-alt mr-2"></i> Refresh Logs</button>
-                    </div>
-                    <div class="overflow-x-auto rounded-2xl border border-gray-100">
-                        <table class="w-full text-sm text-left">
-                            <thead class="bg-gray-50 text-gray-500 text-xs uppercase font-bold">
-                                <tr>
-                                    <th class="px-6 py-4 rounded-tl-2xl">Time</th>
-                                    <th class="px-6 py-4">Member Name</th>
-                                    <th class="px-6 py-4">ID</th>
-                                    <th class="px-6 py-4">Session</th>
-                                    <th class="px-6 py-4 rounded-tr-2xl">Scanner</th>
-                                </tr>
-                            </thead>
-                            <tbody id="logs-table-body" class="divide-y divide-gray-100">
-                                <tr><td colspan="5" class="text-center py-8 text-gray-400">Loading logs...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tab-sessions" class="tab-content hidden">
-                <div class="bg-white p-8 rounded-[32px] shadow-sm mb-8 border border-gray-100">
-                    <h3 class="font-bold text-xl mb-6">Create New Session</h3>
-                    <div class="flex flex-col md:flex-row gap-4">
-                        <input type="text" id="sess-name" placeholder="Session Name (e.g., Day 1 Lunch)" class="flex-[2] p-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500">
-                        <input type="number" id="sess-count" placeholder="Exp. Count" class="flex-1 p-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500">
-                        <button onclick="addSession()" class="bg-gray-900 hover:bg-black text-white px-8 py-4 rounded-full font-bold shadow-lg transform active:scale-95 transition">
-                            <i class="fas fa-plus mr-2"></i> Add
-                        </button>
-                    </div>
-                </div>
-                <div id="sessions-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20"></div>
-            </div>
-
-            <div id="tab-registration" class="tab-content hidden">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                    <div class="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100 h-fit">
-                        <h3 class="font-bold text-lg mb-4 flex items-center gap-2"><i class="fas fa-users-cog text-gray-400"></i> Committees</h3>
+                <div class="flex gap-6 flex-col md:flex-row pb-24">
+                    <div class="glass-panel p-6 rounded-[35px] flex-1 h-fit">
+                        <h3 class="font-bold text-lg mb-4 dark:text-white">Committees</h3>
                         <div class="flex gap-2 mb-4">
-                            <input type="text" id="new-committee-name" placeholder="New Committee" class="w-full p-3 bg-gray-50 rounded-2xl outline-none text-sm">
-                            <button onclick="addCommittee()" class="bg-blue-600 hover:bg-blue-700 text-white w-12 rounded-2xl shadow-lg shadow-blue-500/30 flex-shrink-0"><i class="fas fa-plus"></i></button>
+                            <input type="text" id="new-committee-name" placeholder="New" class="w-full p-3 bg-white dark:bg-slate-800 rounded-xl outline-none text-sm dark:text-white">
+                            <button onclick="addCommittee()" class="bg-slate-200 dark:bg-slate-700 w-12 rounded-xl hover:bg-blue-500 hover:text-white transition"><i class="fas fa-plus"></i></button>
                         </div>
-                        <div id="committee-list" class="space-y-2 max-h-60 overflow-y-auto pr-1 custom-scrollbar"></div>
+                        <div id="committee-list" class="space-y-2 max-h-48 overflow-y-auto"></div>
                     </div>
                     
-                    <div class="lg:col-span-2 bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
-                        <h3 class="font-bold text-lg mb-6 flex items-center gap-2"><i class="fas fa-user-plus text-gray-400"></i> Register New Member</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div class="col-span-1 md:col-span-2">
-                                <label class="text-xs font-bold text-gray-400 ml-3 uppercase">Full Name</label>
-                                <input type="text" id="reg-name" placeholder="Enter name" class="w-full p-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 mt-1">
-                            </div>
-                            <div>
-                                <label class="text-xs font-bold text-gray-400 ml-3 uppercase">Committee</label>
-                                <select id="reg-committee" class="w-full p-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 mt-1 appearance-none cursor-pointer"><option>Select Committee</option></select>
-                            </div>
-                            <div>
-                                <label class="text-xs font-bold text-gray-400 ml-3 uppercase">Dietary Pref</label>
-                                <select id="reg-type" class="w-full p-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 mt-1 appearance-none cursor-pointer">
-                                    <option value="Non-Veg">Non-Veg 🍗</option>
-                                    <option value="Veg">Veg 🥗</option>
-                                </select>
-                            </div>
-                            <div class="col-span-1 md:col-span-2 mt-2">
-                                <button onclick="registerMember()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold p-4 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-xl hover:scale-[1.01] transition-all">Register Member</button>
-                            </div>
+                    <div class="glass-panel p-6 rounded-[35px] flex-[2]">
+                        <input type="text" id="search-member" onkeyup="filterMembers()" placeholder="Search members..." class="w-full p-4 bg-white dark:bg-slate-800 rounded-2xl outline-none mb-4 dark:text-white shadow-sm">
+                        <div class="overflow-x-auto max-h-[400px]">
+                            <table class="w-full text-sm text-left dark:text-gray-300"><tbody id="members-table-body"></tbody></table>
                         </div>
-                    </div>
-                </div>
-
-                <div class="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100 pb-20">
-                      <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                        <h3 class="font-bold text-lg">Registered Members</h3>
-                        <div class="relative w-full md:w-64">
-                            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                            <input type="text" id="search-member" onkeyup="filterMembers()" placeholder="Search ID or Name..." class="w-full pl-10 p-3 bg-gray-50 rounded-full text-sm border-none focus:ring-2 focus:ring-gray-200">
-                        </div>
-                    </div>
-                    <div class="overflow-x-auto max-h-[500px] rounded-2xl border border-gray-100">
-                        <table class="w-full text-sm text-left">
-                            <thead class="text-xs text-gray-500 uppercase bg-gray-50 sticky top-0 z-10">
-                                <tr>
-                                    <th class="px-6 py-4">ID</th>
-                                    <th class="px-6 py-4">Name</th>
-                                    <th class="px-6 py-4">Committee</th>
-                                    <th class="px-6 py-4">Type</th>
-                                    <th class="px-6 py-4 text-right">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="members-table-body" class="divide-y divide-gray-100"></tbody>
-                        </table>
                     </div>
                 </div>
             </div>
 
-            <div id="tab-ids" class="tab-content hidden">
-                <div class="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100 flex flex-col items-center text-center max-w-2xl mx-auto mt-10">
-                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 mb-6">
-                        <i class="fas fa-print text-2xl"></i>
-                    </div>
-                    <h3 class="font-bold text-2xl mb-2">Print ID Cards</h3>
-                    <p class="text-gray-500 mb-8">Select a committee to generate a printable A4 PDF with QR codes.</p>
-                    
-                    <div class="w-full space-y-4">
-                        <select id="id-print-committee" class="w-full p-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-purple-500 appearance-none text-center font-medium cursor-pointer"></select>
-                        <button onclick="generateIDPDF()" class="w-full bg-gray-900 text-white px-6 py-4 rounded-full font-bold shadow-xl hover:bg-black transition flex items-center justify-center gap-2">
-                            <i class="fas fa-file-pdf"></i> Download PDF
-                        </button>
-                    </div>
-                    <div id="id-loading" class="hidden mt-6 text-purple-600 text-sm font-bold bg-purple-50 px-4 py-2 rounded-full animate-pulse">
-                        <i class="fas fa-spinner fa-spin mr-2"></i> Generating PDF...
-                    </div>
+            <div id="tab-settings" class="tab-content hidden fade-in">
+                <div class="glass-panel p-8 rounded-[35px] border-2 border-red-100 dark:border-red-900/30">
+                    <h3 class="font-bold text-xl text-red-500 mb-2">Danger Zone</h3>
+                    <p class="text-gray-400 text-sm mb-6">Irreversible actions. Tread carefully.</p>
+                    <button onclick="systemReset()" class="bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-red-500/20 transition w-full md:w-auto">Reset System Data</button>
+                </div>
+                <div id="pwa-install-area" class="mt-6 hidden">
+                    <button onclick="installPWA()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold shadow-lg flex justify-center gap-2"><i class="fas fa-download"></i> Install App</button>
                 </div>
             </div>
 
-            <div id="tab-staff" class="tab-content hidden">
-                 <div class="bg-white p-8 rounded-[32px] shadow-sm mb-8 border border-gray-100">
-                    <h3 class="font-bold text-lg mb-6">Create New Staff Access</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                        <input type="email" id="staff-email" placeholder="Email Address" class="lg:col-span-2 p-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500">
-                        <input type="password" id="staff-pass" placeholder="Password" class="lg:col-span-1 p-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500">
-                        <select id="staff-role" class="lg:col-span-1 p-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"><option value="scanner">Scanner</option><option value="admin">Admin</option></select>
-                        <button onclick="createStaffUser()" class="lg:col-span-1 bg-gray-900 text-white font-bold p-4 rounded-full shadow-lg hover:shadow-xl">Create</button>
+            <div id="tab-logs" class="tab-content hidden fade-in">
+                <div class="glass-panel p-6 rounded-[35px]">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-xl dark:text-white">Live Logs</h3>
+                        <button onclick="loadSystemLogs()" class="bg-gray-100 dark:bg-slate-700 px-4 py-2 rounded-xl text-sm font-bold dark:text-white hover:rotate-180 transition"><i class="fas fa-sync-alt"></i></button>
                     </div>
-                    <p class="text-xs text-gray-400 mt-4 ml-2"><i class="fas fa-info-circle"></i> Requires re-login to verify new privileges.</p>
-                </div>
-                <div class="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100 pb-20">
-                    <h3 class="font-bold text-lg mb-4">Existing Staff</h3>
-                    <div class="overflow-x-auto rounded-2xl border border-gray-100">
-                        <table class="w-full text-sm text-left">
-                            <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-bold">
-                                <tr>
-                                    <th class="px-6 py-4">Email</th>
-                                    <th class="px-6 py-4">Role</th>
-                                    <th class="px-6 py-4 text-right">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="staff-list-body" class="divide-y divide-gray-100">
-                                <tr><td colspan="3" class="text-center py-4">Loading...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <div class="overflow-x-auto"><table class="w-full text-sm text-left dark:text-gray-300"><tbody id="logs-table-body"></tbody></table></div>
                 </div>
             </div>
 
-            <div id="tab-reports" class="tab-content hidden">
-                 <div class="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
-                    <h3 class="font-bold text-lg mb-8">Data Export Center</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="border-2 border-dashed border-gray-200 p-8 rounded-3xl cursor-pointer hover:bg-yellow-50 hover:border-yellow-200 transition group" onclick="exportFullBackup()">
-                            <div class="flex flex-col items-center text-center">
-                                <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition">
-                                    <i class="fas fa-file-archive text-3xl text-yellow-600"></i>
-                                </div>
-                                <h4 class="font-bold text-xl text-gray-800">Full System Backup</h4>
-                                <p class="text-sm text-gray-500 mt-2">Download raw JSON database (ZIP)</p>
-                            </div>
+            <div id="tab-reports" class="tab-content hidden fade-in">
+                <div class="glass-panel p-8 rounded-[35px]">
+                    <h3 class="font-bold text-xl mb-6 dark:text-white">Data Exports</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div onclick="exportFullBackup()" class="border-2 border-dashed border-gray-300 dark:border-slate-700 p-8 rounded-[30px] cursor-pointer hover:bg-blue-50 dark:hover:bg-slate-800 transition text-center group">
+                            <i class="fas fa-database text-4xl text-blue-500 mb-3 group-hover:scale-110 transition"></i>
+                            <h4 class="font-bold dark:text-white">Full Backup</h4>
                         </div>
-                         <div class="border-2 border-dashed border-gray-200 p-8 rounded-3xl group hover:bg-green-50 hover:border-green-200 transition">
-                            <div class="flex flex-col items-center text-center">
-                                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition">
-                                    <i class="fas fa-file-excel text-3xl text-green-600"></i>
-                                </div>
-                                <h4 class="font-bold text-xl text-gray-800">Session Report</h4>
-                                <p class="text-sm text-gray-500 mt-2 mb-4">Export attendance as Excel</p>
-                                <select id="report-session-select" class="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-500 cursor-pointer" onchange="if(this.value) exportSessionReport(this.value)">
-                                    <option value="">Select Session to Download</option>
-                                </select>
-                            </div>
+                        <div class="border-2 border-dashed border-gray-300 dark:border-slate-700 p-8 rounded-[30px] text-center">
+                            <i class="fas fa-file-excel text-4xl text-green-500 mb-3"></i>
+                            <h4 class="font-bold dark:text-white mb-2">Session Report</h4>
+                            <select id="report-session-select" class="w-full p-2 bg-gray-100 dark:bg-slate-800 rounded-xl text-sm outline-none cursor-pointer" onchange="if(this.value) exportSessionReport(this.value)"><option value="">Select Session</option></select>
                         </div>
                     </div>
-                 </div>
-            </div>
-
-            <div id="tab-settings" class="tab-content hidden">
-                <div class="bg-white p-8 rounded-[32px] shadow-sm border-2 border-red-50">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div class="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center text-red-500"><i class="fas fa-exclamation-triangle"></i></div>
-                        <div>
-                            <h3 class="font-bold text-xl text-red-600">Danger Zone</h3>
-                            <p class="text-sm text-gray-500">Irreversible actions</p>
-                        </div>
-                    </div>
-                    <p class="text-sm text-gray-600 mb-6 bg-red-50 p-4 rounded-xl border border-red-100">
-                        This action will <strong>permanently delete</strong> all members, sessions, logs, and committees. This cannot be undone. Please ensure you have downloaded a backup first.
-                    </p>
-                    <button onclick="systemReset()" class="bg-red-500 text-white px-8 py-4 rounded-full font-bold hover:bg-red-600 shadow-lg shadow-red-500/30 w-full md:w-auto transition">
-                        Reset System Data
-                    </button>
                 </div>
             </div>
+            
+            <div id="tab-ids" class="tab-content hidden fade-in">
+                 <div class="glass-panel p-10 rounded-[40px] flex flex-col items-center text-center max-w-xl mx-auto mt-10">
+                    <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 mb-6 text-3xl"><i class="fas fa-id-card"></i></div>
+                    <h3 class="font-bold text-2xl mb-2 dark:text-white">Generate IDs</h3>
+                    <select id="id-print-committee" class="w-full p-4 bg-gray-50 dark:bg-slate-800 rounded-2xl outline-none mb-4 text-center font-bold dark:text-white"></select>
+                    <button onclick="generateIDPDF()" class="w-full bg-slate-900 dark:bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg">Download PDF</button>
+                    <div id="id-loading" class="hidden mt-4 text-purple-500 font-bold animate-pulse">Processing...</div>
+                </div>
+            </div>
+            
+            <div id="tab-staff" class="tab-content hidden fade-in">
+                <div class="glass-panel p-8 rounded-[35px] mb-6">
+                    <h3 class="font-bold text-xl mb-4 dark:text-white">Add Staff</h3>
+                    <div class="flex flex-col gap-3">
+                        <input type="email" id="staff-email" placeholder="Email" class="p-4 bg-gray-50 dark:bg-slate-800 rounded-2xl outline-none">
+                        <input type="password" id="staff-pass" placeholder="Password" class="p-4 bg-gray-50 dark:bg-slate-800 rounded-2xl outline-none">
+                        <div class="flex gap-3">
+                            <select id="staff-role" class="flex-1 p-4 bg-gray-50 dark:bg-slate-800 rounded-2xl outline-none dark:text-white"><option value="scanner">Scanner</option><option value="admin">Admin</option></select>
+                            <button onclick="createStaffUser()" class="flex-1 bg-slate-900 text-white font-bold rounded-2xl">Add</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-panel p-6 rounded-[35px]">
+                    <table class="w-full text-sm text-left dark:text-gray-300"><tbody id="staff-list-body"></tbody></table>
+                </div>
+            </div>
+
         </main>
     </div>
 
-    <div id="scanner-view" class="hidden h-screen bg-[#F3F4F6] flex flex-col items-center justify-center p-4">
-        <div class="scanner-card w-full max-w-md bg-white p-6 rounded-[32px] shadow-2xl flex flex-col gap-5 border border-gray-100">
-            <div class="flex justify-between items-center mb-1">
+    <div id="scanner-view" class="hidden h-screen bg-slate-900 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-blue-600/20 to-transparent pointer-events-none"></div>
+
+        <div class="w-full max-w-md bg-white/10 backdrop-blur-xl p-6 rounded-[40px] shadow-2xl flex flex-col gap-5 border border-white/10 relative z-10">
+            <div class="flex justify-between items-center px-2">
                 <div>
-                     <h2 class="text-blue-600 font-extrabold text-xl tracking-tight">SCANNER</h2>
-                     <p class="text-xs text-gray-400 font-medium">Point at QR Code</p>
+                     <h2 class="text-white font-black text-2xl tracking-tighter">SCAN MODE</h2>
+                     <p class="text-xs text-blue-300 font-bold uppercase tracking-widest">Active Session</p>
                 </div>
-                <button onclick="logout()" class="w-10 h-10 bg-gray-100 rounded-full text-gray-500 hover:bg-red-100 hover:text-red-500 transition flex items-center justify-center"><i class="fas fa-sign-out-alt"></i></button>
+                <button onclick="logout()" class="w-10 h-10 bg-white/10 rounded-full text-white hover:bg-red-500/80 transition"><i class="fas fa-sign-out-alt"></i></button>
             </div>
 
-            <div class="scanner-viewfinder aspect-square w-full relative ring-4 ring-gray-100">
+            <div class="scanner-viewfinder aspect-square w-full relative ring-4 ring-white/20 shadow-2xl">
                 <div id="qr-reader" class="w-full h-full object-cover"></div>
-                <div class="absolute inset-0 border-2 border-white/40 rounded-3xl m-10 pointer-events-none"></div>
-                <div class="absolute top-4 left-0 right-0 flex justify-center"><span class="bg-black/60 backdrop-blur-md text-white px-4 py-1 rounded-full text-xs" id="camera-status">Initializing...</span></div>
-                
-                <div class="absolute top-8 left-8 w-6 h-6 border-t-4 border-l-4 border-blue-500 rounded-tl-lg"></div>
-                <div class="absolute top-8 right-8 w-6 h-6 border-t-4 border-r-4 border-blue-500 rounded-tr-lg"></div>
-                <div class="absolute bottom-8 left-8 w-6 h-6 border-b-4 border-l-4 border-blue-500 rounded-bl-lg"></div>
-                <div class="absolute bottom-8 right-8 w-6 h-6 border-b-4 border-r-4 border-blue-500 rounded-br-lg"></div>
+                <div class="absolute inset-0 border-[3px] border-blue-400/50 rounded-[35px] m-6 pointer-events-none"></div>
+                <div class="absolute top-0 left-0 w-full h-1 bg-blue-500 shadow-[0_0_20px_#3b82f6] animate-[scan_2s_infinite]"></div>
             </div>
 
             <div class="space-y-3">
-                <div class="relative group">
-                    <i class="fas fa-camera absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition"></i>
-                    <select id="scanner-camera-select" class="w-full bg-gray-50 border-none text-gray-700 py-4 pl-12 pr-10 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 appearance-none text-sm font-bold cursor-pointer">
-                        <option value="">Auto Select Camera</option>
-                    </select>
-                    <i class="fas fa-chevron-down absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                <div class="grid grid-cols-2 gap-2">
+                    <select id="scanner-camera-select" class="bg-black/30 text-white p-3 rounded-xl text-xs font-bold outline-none border border-white/10"><option value="">Auto Cam</option></select>
+                    <select id="scanner-session-select" class="bg-black/30 text-white p-3 rounded-xl text-xs font-bold outline-none border border-white/10"><option value="">Select Session...</option></select>
                 </div>
-
-                <div class="relative group">
-                    <i class="fas fa-clock absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition"></i>
-                    <select id="scanner-session-select" class="w-full bg-gray-50 border-none text-gray-700 py-4 pl-12 pr-10 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 appearance-none text-sm font-bold cursor-pointer">
-                        <option value="">Select Session...</option>
-                    </select>
-                    <i class="fas fa-chevron-down absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
-                </div>
-
                 <div class="flex gap-2">
-                     <input type="text" id="manual-id-input-main" placeholder="ID (CS/01)" class="flex-1 bg-gray-50 border-none py-4 text-center rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold uppercase tracking-widest">
-                
-                    <button onclick="triggerManualScan()" class="bg-blue-600 text-white font-bold w-16 rounded-2xl shadow-lg hover:bg-blue-700 transition active:scale-95 flex items-center justify-center">
-                        <i class="fas fa-check"></i>
-                    </button>
+                     <input type="text" id="manual-id-input-main" placeholder="ID (CS/01)" class="flex-1 bg-white/10 border border-white/10 py-4 text-center rounded-2xl outline-none text-white placeholder-gray-400 font-bold uppercase tracking-widest focus:bg-white/20 transition">
+                    <button onclick="triggerManualScan()" class="bg-blue-600 text-white w-16 rounded-2xl shadow-lg hover:bg-blue-500 active:scale-95 transition"><i class="fas fa-arrow-right text-lg"></i></button>
                 </div>
+                <button onclick="issueGuestTicket()" class="w-full bg-purple-600/80 hover:bg-purple-600 text-white py-3 rounded-2xl font-bold text-sm border border-purple-400/30 shadow-lg mt-2">
+                    <i class="fas fa-ticket-alt mr-2"></i> Issue Guest Ticket
+                </button>
             </div>
         </div>
+        <style> @keyframes scan { 0% { top: 10%; opacity: 0; } 50% { opacity: 1; } 100% { top: 90%; opacity: 0; } } </style>
     </div>
 
-    <div id="scan-result-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm hidden z-[60] flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-[32px] p-8 text-center shadow-2xl transform transition-all scale-100">
-            <div id="result-content" class="mb-6"></div>
-            <button onclick="document.getElementById('scan-result-modal').classList.add('hidden')" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-4 rounded-full font-bold transition">Close</button>
+    <div id="scan-result-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden z-[200] flex items-center justify-center p-6">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-sm rounded-[40px] p-8 text-center shadow-2xl transition-all transform scale-100 border border-gray-200 dark:border-slate-700 relative overflow-hidden">
+            <div id="result-confetti-origin" class="absolute top-0 left-1/2"></div>
+            <div id="result-content" class="mb-6 relative z-10"></div>
+            <button onclick="document.getElementById('scan-result-modal').classList.add('hidden')" class="w-full bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-white py-4 rounded-2xl font-bold text-lg hover:bg-slate-200 transition">Close</button>
         </div>
     </div>
 
@@ -484,45 +437,86 @@
         const auth = getAuth(app);
         let currentUser = null;
         let scanLock = false;
+        let lastScanTime = 0;
         let html5QrCode = null;
+        let deferredPrompt;
 
-        // --- NAVIGATION ---
-        window.switchTab = (tab) => {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`tab-${tab}`).classList.remove('hidden');
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            
-            // Dynamic Data Load
-            if(tab === 'registration') loadCommitteesAndMembers();
-            if(tab === 'ids') loadCommitteesForIDs();
-            if(tab === 'staff') loadStaffList();
-            if(tab === 'logs') loadSystemLogs(); // Load logs when clicked
-            if(tab === 'dashboard') initAdminDashboard();
+        // --- THEME SWITCHER ---
+        window.toggleTheme = () => {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+        }
+        if(localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
+
+        // --- TOAST NOTIFICATION ---
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            const color = type === 'success' ? 'bg-green-500' : (type === 'error' ? 'bg-red-500' : 'bg-blue-500');
+            const icon = type === 'success' ? 'check-circle' : (type === 'error' ? 'times-circle' : 'info-circle');
+            el.className = `${color} text-white px-6 py-4 rounded-2xl shadow-xl flex items-center gap-3 transform translate-y-[-20px] opacity-0 transition-all duration-300 font-bold backdrop-blur-sm`;
+            el.innerHTML = `<i class="fas fa-${icon} text-xl"></i> <span>${msg}</span>`;
+            container.appendChild(el);
+            requestAnimationFrame(() => { el.classList.remove('translate-y-[-20px]', 'opacity-0'); });
+            setTimeout(() => {
+                el.classList.add('opacity-0', 'translate-y-[-20px]');
+                setTimeout(() => el.remove(), 300);
+            }, 3000);
+        }
+
+        // --- FIREWORKS ---
+        function triggerConfetti() {
+            const count = 200;
+            const defaults = { origin: { y: 0.7 } };
+            function fire(particleRatio, opts) {
+                confetti(Object.assign({}, defaults, opts, { particleCount: Math.floor(count * particleRatio) }));
+            }
+            fire(0.25, { spread: 26, startVelocity: 55 });
+            fire(0.2, { spread: 60 });
+            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+            fire(0.1, { spread: 120, startVelocity: 45 });
+        }
+
+        // --- MOBILE MENU ---
+        window.toggleMobileMenu = () => {
+            const drawer = document.getElementById('mobile-drawer');
+            const overlay = document.getElementById('mobile-menu-overlay');
+            const isHidden = drawer.classList.contains('-translate-x-full');
+            if (isHidden) {
+                drawer.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                drawer.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
         };
 
-        window.logout = () => signOut(auth).then(() => location.reload());
+        // --- PWA INSTALL ---
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('pwa-install-area').classList.remove('hidden'); });
+        window.installPWA = async () => { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; document.getElementById('pwa-install-area').classList.add('hidden'); } };
 
-        // --- AUTH ---
+        // --- AUTH & INIT ---
         onAuthStateChanged(auth, async (user) => {
             const loader = document.getElementById('loader');
             if(user) {
                 currentUser = user;
                 const snap = await get(child(ref(db), `users/${user.uid}`));
                 if(snap.exists()) {
-                    const role = snap.val().role;
-                    loader.classList.add('hidden');
+                    loader.classList.add('opacity-0', 'pointer-events-none');
                     document.getElementById('login-view').classList.add('hidden');
-                    if(role === 'admin') {
+                    if(snap.val().role === 'admin') {
                         document.getElementById('admin-view').classList.remove('hidden');
                         initAdminDashboard();
                     } else {
                         document.getElementById('scanner-view').classList.remove('hidden');
                         initScanner();
                     }
-                } else { loader.classList.add('hidden'); Swal.fire('Error', 'No User Data Found', 'error'); }
+                } else { Swal.fire('Error', 'User not found', 'error'); }
             } else {
-                loader.classList.add('hidden');
+                loader.classList.add('opacity-0', 'pointer-events-none');
                 document.getElementById('login-view').classList.remove('hidden');
                 document.getElementById('admin-view').classList.add('hidden');
                 document.getElementById('scanner-view').classList.add('hidden');
@@ -531,190 +525,38 @@
 
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            document.getElementById('loader').classList.remove('hidden');
-            try {
-                await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-pass').value);
-            } catch(e) { 
-                document.getElementById('loader').classList.add('hidden');
-                Swal.fire('Error', 'Login Failed. Check credentials.', 'error');
+            document.getElementById('loader').classList.remove('opacity-0', 'pointer-events-none');
+            try { await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-pass').value); } 
+            catch(e) { 
+                document.getElementById('loader').classList.add('opacity-0', 'pointer-events-none');
+                showToast('Login Failed', 'error');
             }
         });
 
-        // --- ADMIN LOGS (NEW FEATURE) ---
-        window.loadSystemLogs = () => {
-            const tbody = document.getElementById('logs-table-body');
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-blue-500"><i class="fas fa-spinner fa-spin"></i> Fetching Data...</td></tr>';
+        window.logout = () => signOut(auth).then(() => location.reload());
+
+        // --- ADMIN FUNCTIONS ---
+        window.switchTab = (tab) => {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
             
-            // Fetch everything needed to build context
-            Promise.all([
-                get(ref(db, 'logs')),
-                get(ref(db, 'members')),
-                get(ref(db, 'sessions')),
-                get(ref(db, 'users'))
-            ]).then(([logsSnap, memSnap, sessSnap, userSnap]) => {
-                const logs = logsSnap.val() || {};
-                const members = memSnap.val() || {};
-                const sessions = sessSnap.val() || {};
-                const users = userSnap.val() || {};
-                
-                let flatLogs = [];
-
-                // Flatten logs structure: SessionID -> MemberID -> LogData
-                Object.keys(logs).forEach(sessionId => {
-                    const sessionLogs = logs[sessionId];
-                    const sessionName = sessions[sessionId] ? sessions[sessionId].name : 'Unknown Session';
-                    
-                    Object.keys(sessionLogs).forEach(memberKey => {
-                        const logEntry = sessionLogs[memberKey];
-                        const member = members[memberKey] || { name: 'Unknown Member', id: memberKey.replace('_','/') };
-                        
-                        flatLogs.push({
-                            timestamp: logEntry.timestamp,
-                            memName: member.name,
-                            memId: member.id,
-                            session: sessionName,
-                            scanner: users[logEntry.scanner] ? users[logEntry.scanner].email : 'Unknown'
-                        });
-                    });
-                });
-
-                // Sort by newst first
-                flatLogs.sort((a, b) => b.timestamp - a.timestamp);
-
-                if (flatLogs.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-400">No logs found.</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = flatLogs.map(log => `
-                    <tr class="bg-white border-b hover:bg-gray-50 transition">
-                        <td class="px-6 py-4 text-gray-500 text-xs">${new Date(log.timestamp).toLocaleString()}</td>
-                        <td class="px-6 py-4 font-medium">${log.memName}</td>
-                        <td class="px-6 py-4 font-mono text-xs font-bold text-gray-600 bg-gray-100 rounded-lg w-fit px-2 py-1">${log.memId}</td>
-                        <td class="px-6 py-4"><span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">${log.session}</span></td>
-                        <td class="px-6 py-4 text-xs text-gray-500">${log.scanner}</td>
-                    </tr>
-                `).join('');
+            document.querySelectorAll('.desk-nav-item').forEach(el => {
+                el.classList.remove('bg-blue-50', 'dark:bg-slate-800', 'text-blue-600', 'dark:text-blue-400', 'active');
+                el.classList.add('text-gray-500', 'dark:text-gray-400');
             });
+            event.currentTarget.classList.remove('text-gray-500', 'dark:text-gray-400');
+            event.currentTarget.classList.add('bg-blue-50', 'dark:bg-slate-800', 'text-blue-600', 'dark:text-blue-400', 'active');
+
+            const drawer = document.getElementById('mobile-drawer');
+            if (!drawer.classList.contains('-translate-x-full')) toggleMobileMenu();
+
+            if(tab === 'registration') loadCommitteesAndMembers();
+            if(tab === 'ids') loadCommitteesForIDs();
+            if(tab === 'staff') loadStaffList();
+            if(tab === 'logs') loadSystemLogs();
+            if(tab === 'dashboard') initAdminDashboard(); // Updated logic
         };
 
-        // --- SCANNER LOGIC (UPDATED WITH CAMERA SELECT) ---
-        function initScanner() {
-            // Load Sessions
-            onValue(ref(db, 'sessions'), snap => {
-                const sess = snap.val() || {};
-                const sel = document.getElementById('scanner-session-select');
-                sel.innerHTML = '<option value="">Select Session...</option>';
-                for(const [id, d] of Object.entries(sess)) if(d.active) sel.innerHTML += `<option value="${id}">${d.name}</option>`;
-            });
-
-            // Initialize Camera
-            html5QrCode = new Html5Qrcode("qr-reader");
-            
-            // Get Cameras and Populate Select
-            Html5Qrcode.getCameras().then(devices => {
-                const camSelect = document.getElementById('scanner-camera-select');
-                camSelect.innerHTML = ''; // Clear default
-                
-                if (devices && devices.length) {
-                    devices.forEach((device, index) => {
-                        const option = document.createElement('option');
-                        option.value = device.id;
-                        option.text = device.label || `Camera ${index + 1}`;
-                        camSelect.appendChild(option);
-                    });
-                    
-                    // Start with first camera
-                    startCamera(devices[0].id);
-                    
-                    // Listener for camera change
-                    camSelect.addEventListener('change', (e) => {
-                        html5QrCode.stop().then(() => {
-                            startCamera(e.target.value);
-                        }).catch(err => console.error(err));
-                    });
-                } else {
-                    document.getElementById('camera-status').innerText = "No Cameras Found";
-                }
-            }).catch(err => {
-                document.getElementById('camera-status').innerText = "Camera Error";
-            });
-        }
-
-        function startCamera(cameraId) {
-            document.getElementById('camera-status').innerText = "Scanning...";
-            html5QrCode.start(
-                cameraId, 
-                {
-                    fps: 10,
-                    qrbox: { width: 250, height: 250 },
-                    aspectRatio: 1.0
-                },
-                async (decodedText, decodedResult) => {
-                    if(scanLock) return;
-                    scanLock = true;
-                    await processScan(decodedText);
-                    setTimeout(() => scanLock = false, 2500);
-                },
-                (errorMessage) => {
-                    // ignore frame errors
-                }
-            ).catch(err => {
-                console.log(err);
-                document.getElementById('camera-status').innerText = "Error Starting Camera";
-            });
-        }
-
-        window.triggerManualScan = () => {
-            const val = document.getElementById('manual-id-input-main').value;
-            if(!val) return Swal.fire('Error', 'Enter an ID', 'warning');
-            processScan(val.toUpperCase());
-            document.getElementById('manual-id-input-main').value = ''; // clear input
-        }
-
-        window.processScan = async (rawID) => {
-            const sessId = document.getElementById('scanner-session-select').value;
-            if(!sessId) { Swal.fire('Select Session', '', 'warning'); return; }
-            
-            const id = rawID.trim();
-            const key = id.replace('/','_');
-            const memSnap = await get(child(ref(db, 'members'), key));
-            
-            if(!memSnap.exists()) {
-                showScanModal('error', 'Invalid ID', id);
-                return;
-            }
-            const m = memSnap.val();
-            
-            const logRef = child(ref(db, `logs/${sessId}`), key);
-            const logSnap = await get(logRef);
-            
-            if(logSnap.exists()) {
-                const t = new Date(logSnap.val().timestamp).toLocaleTimeString();
-                showScanModal('warning', 'ALREADY TAKEN', `Issued at ${t}`);
-            } else {
-                showScanModal('success', m.name, `${m.committee} | ${m.type}`, () => {
-                    set(logRef, { timestamp: Date.now(), scanner: currentUser.uid });
-                    document.getElementById('scan-result-modal').classList.add('hidden');
-                    const Toast = Swal.mixin({toast: true, position: 'top-end', showConfirmButton: false, timer: 3000});
-                    Toast.fire({icon: 'success', title: 'Meal Issued'});
-                });
-            }
-        };
-
-        function showScanModal(type, title, msg, cb) {
-            const m = document.getElementById('scan-result-modal');
-            const c = document.getElementById('result-content');
-            const color = type==='success'?'text-green-500':(type==='warning'?'text-yellow-500':'text-red-500');
-            const icon = type==='success'?'fa-check-circle':(type==='warning'?'fa-exclamation-triangle':'fa-times-circle');
-            
-            let btn = cb ? `<button id="issue-conf-btn" class="w-full bg-green-500 hover:bg-green-600 text-white py-4 rounded-full font-bold mt-6 shadow-lg shadow-green-500/30 animate-pulse text-lg">ISSUE MEAL <i class="fas fa-check ml-2"></i></button>` : '';
-            c.innerHTML = `<i class="fas ${icon} ${color} text-7xl mb-6"></i><h3 class="text-3xl font-bold mb-2">${title}</h3><p class="text-gray-500 font-medium">${msg}</p>${btn}`;
-            m.classList.remove('hidden');
-            if(cb) document.getElementById('issue-conf-btn').onclick = cb;
-        }
-
-        // --- DASHBOARD (EXISTING LOGIC) ---
         function initAdminDashboard() {
             onValue(ref(db), (snapshot) => {
                 const data = snapshot.val() || {};
@@ -725,42 +567,53 @@
                 const totalMembers = Object.keys(members).length;
                 let totalIssued = 0;
                 let activeCount = 0;
-                
+
                 const grid = document.getElementById('session-stats-grid');
                 grid.innerHTML = '';
                 const reportSelect = document.getElementById('report-session-select');
-                reportSelect.innerHTML = '<option value="">Select Session to Download</option>';
+                reportSelect.innerHTML = '<option value="">Select Session...</option>';
 
                 for (const [sid, sess] of Object.entries(sessions)) {
                     if(sess.active) activeCount++;
                     const sessLogs = logs[sid] || {};
                     const issued = Object.keys(sessLogs).length;
                     totalIssued += issued;
-
+                    
                     const quota = parseInt(sess.expected) || 0;
                     const remaining = quota - issued;
                     const isDeficit = remaining < 0;
-                    
+                    const progress = quota > 0 ? Math.min((issued/quota)*100, 100) : 0;
+
                     grid.innerHTML += `
-                        <div class="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100 relative overflow-hidden group">
-                            <div class="absolute top-0 right-0 p-4">
-                                <span class="text-xs font-bold px-3 py-1 rounded-full ${sess.active ? 'bg-green-100 text-green-700 animate-pulse' : 'bg-gray-100 text-gray-500'}">${sess.active ? 'LIVE' : 'CLOSED'}</span>
+                        <div class="glass-panel p-6 rounded-[35px] relative group overflow-hidden hover:scale-[1.01] transition-transform">
+                            <div class="absolute top-5 right-5">
+                                <span class="text-[10px] font-bold px-3 py-1.5 rounded-full ${sess.active ? 'bg-green-100 text-green-700 animate-pulse' : 'bg-gray-100 text-gray-500'}">${sess.active ? 'LIVE' : 'CLOSED'}</span>
                             </div>
-                            <div class="mb-4">
-                                <h4 class="font-bold text-xl text-gray-800">${sess.name}</h4>
+                            <h4 class="font-bold text-xl text-slate-800 dark:text-white mb-4 pr-16">${sess.name}</h4>
+                            
+                            <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-2 font-bold uppercase tracking-wider">
+                                <span>Target: ${quota}</span>
+                                <span>Served: ${issued}</span>
                             </div>
-                            <div class="flex justify-between text-sm text-gray-500 mb-2 font-medium">
-                                <span>Quota: ${quota}</span>
-                                <span>Issued: <strong class="text-gray-900">${issued}</strong></span>
+                            
+                            <div class="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-4 mb-5 overflow-hidden">
+                                <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-4 rounded-full transition-all duration-1000 ease-out" style="width: ${progress}%"></div>
                             </div>
-                            <div class="w-full bg-gray-100 rounded-full h-3 mb-4 overflow-hidden">
-                                <div class="bg-gradient-to-r from-pink-500 to-rose-500 h-3 rounded-full transition-all duration-1000" style="width: ${Math.min((issued/quota)*100, 100)}%"></div>
+                            
+                            <div class="p-4 ${isDeficit ? 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'} rounded-[20px] text-center text-sm font-bold mb-4 flex justify-between items-center px-6">
+                                <span>${isDeficit ? 'Over Limit' : 'Remaining'}</span>
+                                <span class="text-lg">${Math.abs(remaining)}</span>
                             </div>
-                            <div class="p-3 ${isDeficit ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'} rounded-2xl text-center text-sm font-bold mb-2">
-                                ${isDeficit ? `Excess: ${Math.abs(remaining)}` : `Remaining: ${remaining}`}
-                            </div>
-                            <div class="flex justify-end">
-                                <button onclick="deleteSession('${sid}')" class="text-xs text-red-400 hover:text-red-600 font-bold hover:bg-red-50 px-3 py-1 rounded-full transition">Delete</button>
+                            
+                            <div class="flex justify-between items-center border-t border-gray-100 dark:border-slate-700 pt-4">
+                                <button onclick="deleteSession('${sid}')" class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 dark:bg-slate-700 dark:hover:bg-red-900/50 transition"><i class="fas fa-trash"></i></button>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-bold text-gray-400">Toggle Status</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer" onchange="toggleSession('${sid}', this.checked)" ${sess.active ? 'checked' : ''}>
+                                        <div class="w-11 h-6 bg-gray-200 dark:bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -770,237 +623,235 @@
                 document.getElementById('stat-total-members').innerText = totalMembers;
                 document.getElementById('stat-issued-today').innerText = totalIssued;
                 document.getElementById('stat-active-sessions').innerText = activeCount;
-                document.getElementById('stat-coverage').innerText = totalMembers > 0 ? Math.round((totalIssued / (totalMembers * Object.keys(sessions).length || 1)) * 100) + '%' : '0%';
                 
-                // Populate Sessions List
-                const sList = document.getElementById('sessions-list');
-                const scannerSel = document.getElementById('scanner-session-select');
-                sList.innerHTML = '';
-                // Note: scannerSel cleared in initScanner, not here to avoid conflict
-                
-                for(const [id, d] of Object.entries(sessions)) {
-                    sList.innerHTML += `
-                        <div class="bg-white p-5 rounded-[24px] border border-gray-100 flex justify-between items-center shadow-sm hover:shadow-md transition">
-                            <div>
-                                <h4 class="font-bold text-gray-800">${d.name}</h4>
-                                <span class="text-xs text-gray-400 font-medium bg-gray-50 px-2 py-1 rounded-lg">Target: ${d.expected}</span>
-                            </div>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" class="sr-only peer" onchange="toggleSession('${id}', this.checked)" ${d.active ? 'checked' : ''}>
-                                <div class="w-14 h-8 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-green-500 shadow-inner"></div>
-                            </label>
-                        </div>
-                    `;
-                }
+                // Reuse html for sessions list
+                document.getElementById('sessions-list').innerHTML = grid.innerHTML;
             });
         }
 
-        // --- OTHER FUNCTIONS (Existing) ---
+        window.loadSystemLogs = () => {
+            const tbody = document.getElementById('logs-table-body');
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-blue-500 animate-pulse font-bold">Fetching live data...</td></tr>';
+            
+            Promise.all([get(ref(db, 'logs')), get(ref(db, 'members')), get(ref(db, 'sessions')), get(ref(db, 'users'))])
+            .then(([lSnap, mSnap, sSnap, uSnap]) => {
+                const logs = lSnap.val() || {};
+                const mems = mSnap.val() || {};
+                const sess = sSnap.val() || {};
+                const users = uSnap.val() || {};
+                let flat = [];
+
+                Object.keys(logs).forEach(sid => {
+                    Object.keys(logs[sid]).forEach(mid => {
+                        const entry = logs[sid][mid];
+                        flat.push({
+                            time: entry.timestamp,
+                            name: (mems[mid] || {}).name || (entry.guest ? `Guest: ${mid}` : 'Unknown'),
+                            id: mid.replace('_','/'),
+                            sess: (sess[sid] || {}).name || 'Unknown',
+                            scan: (users[entry.scanner] || {}).email || 'System'
+                        });
+                    });
+                });
+                flat.sort((a,b) => b.time - a.time);
+                
+                if(!flat.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-gray-400">No records found.</td></tr>'; return; }
+                
+                tbody.innerHTML = flat.map(f => `
+                    <tr class="border-b border-gray-100 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 transition">
+                        <td class="px-6 py-4 text-xs text-gray-500 dark:text-gray-400">${new Date(f.time).toLocaleTimeString()}</td>
+                        <td class="px-6 py-4 font-bold text-slate-700 dark:text-gray-200">${f.name}</td>
+                        <td class="px-6 py-4 font-mono text-xs bg-gray-100 dark:bg-slate-700 rounded w-fit px-2">${f.id}</td>
+                        <td class="px-6 py-4"><span class="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs px-2 py-1 rounded-lg font-bold">${f.sess}</span></td>
+                        <td class="px-6 py-4 text-xs text-gray-400">${f.scan}</td>
+                    </tr>
+                `).join('');
+            });
+        }
+
+        // --- DATA OPERATIONS ---
         window.addSession = () => {
             const name = document.getElementById('sess-name').value;
             const count = document.getElementById('sess-count').value;
-            if(name) push(ref(db, 'sessions'), { name, expected: count, active: false });
-        };
-        window.toggleSession = (id, val) => update(ref(db, `sessions/${id}`), { active: val });
-        window.deleteSession = (id) => {
-            if(confirm("Delete this session and its logs?")) {
-                remove(ref(db, `sessions/${id}`));
-                remove(ref(db, `logs/${id}`));
+            if(name) {
+                push(ref(db, 'sessions'), { name, expected: count, active: false });
+                showToast('Session Created');
             }
         };
+        window.toggleSession = (id, val) => update(ref(db, `sessions/${id}`), { active: val });
+        window.deleteSession = (id) => { if(confirm("Are you sure?")) { remove(ref(db, `sessions/${id}`)); remove(ref(db, `logs/${id}`)); showToast('Session Deleted', 'info'); }};
+        
         window.addCommittee = () => {
             const n = document.getElementById('new-committee-name').value;
-            if(n) push(ref(db, 'committees'), { name: n });
-            document.getElementById('new-committee-name').value = '';
+            if(n) { push(ref(db, 'committees'), { name: n }); document.getElementById('new-committee-name').value = ''; }
         };
+        
         function loadCommitteesAndMembers() {
             onValue(ref(db, 'committees'), s => {
-                const l = document.getElementById('committee-list');
-                const sel = document.getElementById('reg-committee');
-                l.innerHTML = ''; sel.innerHTML = '<option>Select Committee</option>';
-                const d = s.val() || {};
-                for(const [k, v] of Object.entries(d)) {
+                const l = document.getElementById('committee-list'); const sel = document.getElementById('reg-committee'); l.innerHTML = ''; sel.innerHTML = '<option>Select Committee</option>';
+                for(const [k, v] of Object.entries(s.val()||{})) {
                     sel.innerHTML += `<option value="${v.name}">${v.name}</option>`;
-                    l.innerHTML += `<div class="p-3 bg-gray-50 rounded-2xl flex justify-between items-center text-sm font-medium hover:bg-gray-100 transition"><span>${v.name}</span> <i class="fas fa-trash text-red-300 hover:text-red-500 cursor-pointer" onclick="remove(ref(db, 'committees/${k}'))"></i></div>`;
+                    l.innerHTML += `<div class="p-3 bg-gray-50 dark:bg-slate-700 rounded-xl flex justify-between text-sm dark:text-white"><span>${v.name}</span> <i class="fas fa-trash text-red-300 cursor-pointer hover:text-red-500" onclick="remove(ref(db, 'committees/${k}'))"></i></div>`;
                 }
             });
             onValue(ref(db, 'members'), s => {
-                const b = document.getElementById('members-table-body');
-                b.innerHTML = '';
-                const m = s.val() || {};
-                window.allMembers = m;
-                renderMembers(m);
+                const b = document.getElementById('members-table-body'); b.innerHTML = ''; window.allMembers = s.val()||{}; renderMembers(window.allMembers);
             });
         }
         function renderMembers(m) {
-             const b = document.getElementById('members-table-body');
-             b.innerHTML = '';
+             const b = document.getElementById('members-table-body'); b.innerHTML = '';
              for(const [k, v] of Object.entries(m)) {
                 b.innerHTML += `
-                    <tr class="bg-white border-b hover:bg-gray-50 transition">
-                        <td class="px-6 py-4 font-mono font-bold text-gray-600">${v.id}</td>
-                        <td class="px-6 py-4 font-medium">${v.name}</td>
-                        <td class="px-6 py-4"><span class="bg-gray-100 text-gray-600 px-2 py-1 rounded-lg text-xs font-bold">${v.committee}</span></td>
-                        <td class="px-6 py-4"><span class="text-${v.type==='Veg'?'green':'red'}-600 font-bold bg-${v.type==='Veg'?'green':'red'}-50 px-2 py-1 rounded-lg text-xs">${v.type.toUpperCase()}</span></td>
-                        <td class="px-6 py-4 text-right"><button onclick="remove(ref(db, 'members/${k}'))" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-full transition"><i class="fas fa-trash"></i></button></td>
+                    <tr class="border-b border-gray-50 dark:border-slate-700">
+                        <td class="px-4 py-3 font-mono text-gray-500 dark:text-gray-400">${v.id}</td>
+                        <td class="px-4 py-3 font-medium dark:text-white">${v.name}</td>
+                        <td class="px-4 py-3 text-xs text-gray-400">${v.committee}</td>
+                        <td class="px-4 py-3 text-xs font-bold ${v.type==='Veg'?'text-green-500':'text-red-500'}">${v.type}</td>
+                        <td class="px-4 py-3"><button onclick="remove(ref(db, 'members/${k}'))" class="text-red-300 hover:text-red-500"><i class="fas fa-trash"></i></button></td>
                     </tr>`;
              }
         }
         window.filterMembers = () => {
-            const term = document.getElementById('search-member').value.toLowerCase();
-            const filtered = {};
-            for(const [k, v] of Object.entries(window.allMembers || {})) {
-                if(v.name.toLowerCase().includes(term) || v.id.toLowerCase().includes(term)) filtered[k] = v;
-            }
-            renderMembers(filtered);
+            const t = document.getElementById('search-member').value.toLowerCase(); const f = {};
+            for(const [k, v] of Object.entries(window.allMembers || {})) if(v.name.toLowerCase().includes(t) || v.id.toLowerCase().includes(t)) f[k] = v;
+            renderMembers(f);
         }
         window.registerMember = async () => {
-            const name = document.getElementById('reg-name').value;
-            const com = document.getElementById('reg-committee').value;
-            const type = document.getElementById('reg-type').value;
+            const name = document.getElementById('reg-name').value; const com = document.getElementById('reg-committee').value; const type = document.getElementById('reg-type').value;
             if(name && com !== 'Select Committee') {
-                const snap = await get(ref(db, 'members'));
-                const count = snap.exists() ? Object.keys(snap.val()).length + 1 : 1;
+                const snap = await get(ref(db, 'members')); const count = snap.exists() ? Object.keys(snap.val()).length + 1 : 1;
                 const id = `CS/${String(count).padStart(2,'0')}`;
                 await set(ref(db, `members/${id.replace('/','_')}`), { id, name, committee: com, type });
-                Swal.fire('Registered', `${name} (${id})`, 'success');
-                document.getElementById('reg-name').value = '';
-            } else { Swal.fire('Error', 'Fill all fields', 'warning'); }
-        };
-        window.loadCommitteesForIDs = () => {
-             onValue(ref(db, 'committees'), snap => {
-                 const comms = snap.val() || {};
-                 const sel = document.getElementById('id-print-committee');
-                 sel.innerHTML = '';
-                 for(const [id, d] of Object.entries(comms)) sel.innerHTML += `<option value="${d.name}">${d.name}</option>`;
-            });
-        }
-        window.generateIDPDF = async () => {
-            const committee = document.getElementById('id-print-committee').value;
-            if(!committee) return Swal.fire('Select Committee', '', 'warning');
-            document.getElementById('id-loading').classList.remove('hidden');
-            const snap = await get(ref(db, 'members'));
-            const members = Object.values(snap.val() || {}).filter(m => m.committee === committee);
-            if(members.length === 0) {
-                document.getElementById('id-loading').classList.add('hidden');
-                return Swal.fire('No Members', 'No members found in this committee', 'info');
-            }
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('p', 'mm', 'a4');
-            const cardW = 90, cardH = 55;
-            let x = 10, y = 10;
-            for (let i = 0; i < members.length; i++) {
-                const m = members[i];
-                doc.setDrawColor(200); doc.rect(x, y, cardW, cardH);
-                doc.setFillColor(236, 72, 153); doc.rect(x, y, cardW, 12, 'F');
-                doc.setTextColor(255); doc.setFontSize(12); doc.setFont("helvetica", "bold"); doc.text("FOODFLOW CAMP", x + cardW/2, y + 8, { align: 'center' });
-                doc.setTextColor(0);
-                try {
-                    const qrDataUrl = await QRCode.toDataURL(m.id, { margin: 1 });
-                    doc.addImage(qrDataUrl, 'PNG', x + 5, y + 15, 30, 30);
-                } catch(e) { console.error(e); }
-                doc.setFontSize(14); doc.text(m.id, x + 60, y + 25, { align: 'center' });
-                doc.setFontSize(10); doc.setFont("helvetica", "normal");
-                const splitName = doc.splitTextToSize(m.name, 50); doc.text(splitName, x + 60, y + 35, { align: 'center' });
-                doc.setFontSize(8); doc.setTextColor(m.type === 'Veg' ? 'green' : 'red'); doc.text(m.type.toUpperCase(), x + 60, y + 48, { align: 'center' });
-                if (i % 2 === 0) { x += cardW + 5; } else { x = 10; y += cardH + 5; }
-                if (y > 280) { doc.addPage(); x = 10; y = 10; }
-            }
-            doc.save(`${committee}_IDs.pdf`);
-            document.getElementById('id-loading').classList.add('hidden');
+                showToast(`Registered: ${name}`); document.getElementById('reg-name').value = '';
+            } else showToast('Fill all fields', 'error');
         };
 
-        // --- STAFF & RESET (Existing) ---
-        window.createStaffUser = async () => {
-            const email = document.getElementById('staff-email').value;
-            const pass = document.getElementById('staff-pass').value;
-            const role = document.getElementById('staff-role').value;
-            if(!email || !pass) return Swal.fire('Missing Data', 'Please fill email and password', 'warning');
-            try {
-                const uc = await createUserWithEmailAndPassword(auth, email, pass);
-                await set(ref(db, 'users/' + uc.user.uid), { email, role });
-                Swal.fire('Success', 'Staff Created! You will be logged out to verify.', 'success').then(() => location.reload());
-            } catch(e) { Swal.fire('Error', e.message, 'error'); }
-        };
-        window.loadStaffList = () => {
-            const tbody = document.getElementById('staff-list-body');
-            tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4">Loading...</td></tr>';
-            onValue(ref(db, 'users'), (snapshot) => {
-                const users = snapshot.val() || {};
-                tbody.innerHTML = '';
-                if(Object.keys(users).length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4">No staff found.</td></tr>';
-                    return;
+        // --- SCANNER ---
+        function initScanner() {
+            onValue(ref(db, 'sessions'), snap => {
+                const s = document.getElementById('scanner-session-select'); s.innerHTML = '<option value="">Select Session...</option>';
+                for(const [k, v] of Object.entries(snap.val()||{})) if(v.active) s.innerHTML += `<option value="${k}">${v.name}</option>`;
+            });
+            html5QrCode = new Html5Qrcode("qr-reader");
+            Html5Qrcode.getCameras().then(dev => {
+                const s = document.getElementById('scanner-camera-select'); s.innerHTML = '';
+                dev.forEach(d => s.innerHTML += `<option value="${d.id}">${d.label}</option>`);
+                if(dev.length) { 
+                    startCamera(dev[0].id); 
+                    s.addEventListener('change', e => { html5QrCode.stop().then(() => startCamera(e.target.value)); });
                 }
-                Object.entries(users).forEach(([uid, user]) => {
-                    tbody.innerHTML += `
-                        <tr class="bg-white border-b hover:bg-gray-50 transition">
-                            <td class="px-6 py-4 font-medium">${user.email}</td>
-                            <td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-xs font-bold ${user.role==='admin'?'bg-purple-100 text-purple-600':'bg-blue-100 text-blue-600'}">${user.role.toUpperCase()}</span></td>
-                            <td class="px-6 py-4 text-right">${user.role !== 'admin' ? `<button onclick="removeStaff('${uid}')" class="text-red-500 hover:text-red-700 font-bold hover:bg-red-50 px-3 py-1 rounded-full transition">Remove</button>` : ''}</td>
-                        </tr>`;
-                });
             });
-        };
-        window.removeStaff = (uid) => {
-            Swal.fire({
-                title: 'Remove Staff?',
-                text: "This removes database access but not the Auth account (requires Firebase Admin SDK).",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, remove'
-            }).then((result) => {
-                if(result.isConfirmed) { remove(ref(db, `users/${uid}`)); }
-            });
-        };
-        window.systemReset = async () => {
-            const { value: password } = await Swal.fire({
-                title: 'Enter Admin Password', input: 'password', inputLabel: 'Password required to reset system', inputPlaceholder: 'Enter your password', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'RESET EVERYTHING'
-            });
-            if (password === "200431504082") {
-                document.getElementById('loader').classList.remove('hidden');
-                const updates = {}; updates['members'] = null; updates['sessions'] = null; updates['logs'] = null; updates['committees'] = null;
-                await update(ref(db), updates);
-                document.getElementById('loader').classList.add('hidden');
-                Swal.fire('Reset Complete', 'System has been wiped.', 'success').then(() => location.reload());
-            } else if (password) { Swal.fire('Access Denied', 'Incorrect Password', 'error'); }
-        };
-        window.showSetupModal = () => document.getElementById('setup-modal').classList.remove('hidden');
-        window.verifySetupCode = () => {
-            if(document.getElementById('setup-code').value === "200431504082") {
-                document.getElementById('setup-form').classList.remove('hidden');
-                document.getElementById('verify-btn').classList.add('hidden');
-                document.getElementById('create-sa-btn').classList.remove('hidden');
-            } else Swal.fire('Error', 'Invalid Code', 'error');
-        };
-        window.createSuperAdmin = async () => {
-            const email = document.getElementById('sa-email').value;
-            const pass = document.getElementById('sa-pass').value;
-            try {
-                const uc = await createUserWithEmailAndPassword(auth, email, pass);
-                await set(ref(db, 'users/' + uc.user.uid), { email, role: 'admin' });
-                location.reload();
-            } catch(e) { Swal.fire('Error', e.message, 'error'); }
-        };
-        window.exportFullBackup = async () => {
-            const d = (await get(ref(db))).val();
-            const z = new JSZip();
-            z.file("db.json", JSON.stringify(d, null, 2));
-            saveAs(await z.generateAsync({type:"blob"}), "backup.zip");
-        };
-        window.exportSessionReport = async (sid) => {
-            const logs = (await get(child(ref(db), `logs/${sid}`))).val() || {};
-            const mems = (await get(ref(db, 'members'))).val() || {};
-            const data = Object.entries(logs).map(([k, v]) => {
-                const m = mems[k] || {name:'Unknown', committee:'-'};
-                return { ID: k, Name: m.name, Committee: m.committee, Time: new Date(v.timestamp).toLocaleString() };
-            });
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Report");
-            XLSX.writeFile(wb, "session_report.xlsx");
-        };
+        }
+        function startCamera(id) {
+            html5QrCode.start(id, { fps: 10, qrbox: { width: 250, height: 250 } }, 
+                async (txt) => {
+                    if(scanLock) return;
+                    if(Date.now() - lastScanTime < 5000) { showToast('Anti-Fraud: Slow Down!', 'error'); return; }
+                    
+                    scanLock = true; lastScanTime = Date.now();
+                    await processScan(txt);
+                    setTimeout(() => scanLock = false, 2500);
+                }, () => {});
+        }
+        window.triggerManualScan = () => {
+            const v = document.getElementById('manual-id-input-main').value;
+            if(v) { processScan(v.toUpperCase()); document.getElementById('manual-id-input-main').value=''; }
+        }
         
+        window.issueGuestTicket = async () => {
+            const sid = document.getElementById('scanner-session-select').value;
+            if(!sid) return showToast('Select Session', 'error');
+            
+            const gid = `GUEST_${Date.now()}`;
+            await set(child(ref(db, `logs/${sid}`), gid), { timestamp: Date.now(), scanner: currentUser.uid, guest: true });
+            
+            showScanModal('success', 'GUEST TICKET', 'Meal Issued Successfully', null);
+            triggerConfetti();
+        };
+
+        window.processScan = async (rawID) => {
+            const sid = document.getElementById('scanner-session-select').value;
+            if(!sid) return showToast('Select Session First', 'error');
+            
+            const key = rawID.trim().replace('/','_');
+            const mSnap = await get(child(ref(db, 'members'), key));
+            
+            if(!mSnap.exists()) return showScanModal('error', 'INVALID ID', rawID);
+            
+            const m = mSnap.val();
+            const logSnap = await get(child(ref(db, `logs/${sid}`), key));
+            
+            if(logSnap.exists()) {
+                const t = new Date(logSnap.val().timestamp).toLocaleTimeString();
+                showScanModal('warning', 'ALREADY EATEN', `Served at ${t}`);
+            } else {
+                showScanModal('success', m.name, `${m.committee} | ${m.type}`, () => {
+                    set(child(ref(db, `logs/${sid}`), key), { timestamp: Date.now(), scanner: currentUser.uid });
+                    document.getElementById('scan-result-modal').classList.add('hidden');
+                    triggerConfetti();
+                    showToast('Meal Issued Successfully');
+                });
+            }
+        };
+
+        function showScanModal(type, title, msg, cb) {
+            const c = document.getElementById('result-content');
+            const color = type==='success'?'text-green-500':(type==='warning'?'text-yellow-500':'text-red-500');
+            const icon = type==='success'?'check-circle':(type==='warning'?'exclamation-circle':'times-circle');
+            
+            let btn = cb ? `<button id="issue-conf-btn" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold mt-6 shadow-lg animate-pulse">CONFIRM ISSUE</button>` : '';
+            
+            c.innerHTML = `
+                <div class="mb-4 ${color} text-6xl animate-bounce"><i class="fas fa-${icon}"></i></div>
+                <h3 class="text-3xl font-black text-slate-800 dark:text-white mb-2">${title}</h3>
+                <p class="text-gray-500 font-medium text-lg">${msg}</p>
+                ${btn}
+            `;
+            document.getElementById('scan-result-modal').classList.remove('hidden');
+            if(cb) document.getElementById('issue-conf-btn').onclick = cb;
+        }
+
+        // --- UTILS ---
+        window.loadCommitteesForIDs = () => onValue(ref(db, 'committees'), s => { const sel = document.getElementById('id-print-committee'); sel.innerHTML = ''; for(const [k,v] of Object.entries(s.val()||{})) sel.innerHTML+=`<option value="${v.name}">${v.name}</option>`; });
+        window.generateIDPDF = async () => {
+            const c = document.getElementById('id-print-committee').value; if(!c) return;
+            document.getElementById('id-loading').classList.remove('hidden');
+            const m = Object.values((await get(ref(db, 'members'))).val()||{}).filter(x=>x.committee===c);
+            const { jsPDF } = window.jspdf; const doc = new jsPDF('p','mm','a4');
+            let x=10,y=10;
+            for(let i=0; i<m.length; i++) {
+                doc.setDrawColor(200); doc.roundedRect(x,y,90,55,3,3); 
+                doc.setFillColor(59, 130, 246); doc.rect(x,y,90,10,'F'); 
+                doc.setTextColor(255); doc.setFontSize(10); doc.text("CAMP PASS",x+45,y+7,{align:'center'});
+                doc.setTextColor(0);
+                try { const u = await QRCode.toDataURL(m[i].id); doc.addImage(u,'PNG',x+5,y+15,30,30); } catch(e){}
+                doc.setFontSize(16); doc.text(m[i].id,x+60,y+25,{align:'center'});
+                doc.setFontSize(10); doc.text(m[i].name,x+60,y+35,{align:'center'});
+                if(i%2===0) x+=95; else { x=10; y+=60; } if(y>280) { doc.addPage(); y=10; x=10; }
+            }
+            doc.save('ids.pdf'); document.getElementById('id-loading').classList.add('hidden');
+        };
+        window.createStaffUser = async () => {
+            const e = document.getElementById('staff-email').value; const p = document.getElementById('staff-pass').value; const r = document.getElementById('staff-role').value;
+            try { const u = await createUserWithEmailAndPassword(auth,e,p); await set(ref(db,'users/'+u.user.uid),{email:e,role:r}); showToast('Staff Added'); } catch(err){ showToast(err.message, 'error'); }
+        };
+        window.loadStaffList = () => onValue(ref(db,'users'), s => {
+            const b = document.getElementById('staff-list-body'); b.innerHTML = '';
+            for(const [k,v] of Object.entries(s.val()||{})) b.innerHTML+=`<tr class="border-b dark:border-slate-700"><td class="p-3 dark:text-gray-300">${v.email}</td><td class="p-3 dark:text-gray-300">${v.role}</td><td class="p-3"><button onclick="removeStaff('${k}')" class="text-red-500">Del</button></td></tr>`;
+        });
+        window.removeStaff = (uid) => { if(confirm("Remove?")) remove(ref(db,`users/${uid}`)); };
+        window.systemReset = async () => {
+            const {value:p} = await Swal.fire({title:'Admin Password', input:'password'});
+            if(p==="200431504082") { await update(ref(db),{members:null,sessions:null,logs:null,committees:null}); location.reload(); }
+        };
+        window.verifySetupCode = () => { if(document.getElementById('setup-code').value==="200431504082") { document.getElementById('setup-form').classList.remove('hidden'); document.getElementById('verify-btn').classList.add('hidden'); document.getElementById('create-sa-btn').classList.remove('hidden'); } };
+        window.createSuperAdmin = async () => { try { await createUserWithEmailAndPassword(auth, document.getElementById('sa-email').value, document.getElementById('sa-pass').value).then(u=>set(ref(db,'users/'+u.user.uid),{email:document.getElementById('sa-email').value, role:'admin'})); location.reload(); } catch(e){alert(e.message);} };
+        window.exportFullBackup = async () => { const z = new JSZip(); z.file("db.json", JSON.stringify((await get(ref(db))).val(), null, 2)); saveAs(await z.generateAsync({type:"blob"}), "backup.zip"); };
+        window.exportSessionReport = async (sid) => {
+            const l = (await get(child(ref(db), `logs/${sid}`))).val() || {}; const m = (await get(ref(db, 'members'))).val() || {};
+            const d = Object.entries(l).map(([k, v]) => ({ ID: k, Name: (m[k]||{}).name||(v.guest?'GUEST':'Unknown'), Time: new Date(v.timestamp).toLocaleString() }));
+            const w = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(w, XLSX.utils.json_to_sheet(d), "Report"); XLSX.writeFile(w, "report.xlsx");
+        };
         window.remove = remove; window.ref = ref; window.db = db;
     </script>
 </body>
